@@ -157,7 +157,9 @@ function applyCustomClient(c){
   setVal('sc2-profit', c.income); setVal('ret-income', c.income); setVal('ret-age', c.age);
   setVal('ret-status', c.filing); setVal('veh-biz-miles', c.miles);
   setVal('sa-agi', Math.round(estimateClientAGI(c))); setVal('sa-filing', c.filing);
-  [calcScheduleC, calcHomeOffice, calcVehicle, calcScorp, calcRetirement, calcScheduleA, calcInvestmentIncome, calcSchedule1]
+  setVal('re-agi', Math.round(estimateClientAGI(c)));
+  setVal('tc-base-filing', c.filing);
+  [calcScheduleC, calcHomeOffice, calcVehicle, calcScorp, calcRetirement, calcScheduleA, calcRealEstate, calcInvestmentIncome, calcSchedule1]
     .forEach(fn => { try{ if(typeof fn === 'function') fn(); }catch(e){} });
   const nameEl = document.getElementById('sidebar-client-name'); if(nameEl) nameEl.textContent = c.name;
   showToast('Loaded: ' + c.name);
@@ -254,6 +256,50 @@ function renderDashWidgets(){
 <div class="card"><div class="flex items-center justify-between mb-3"><h3 class="text-sm font-semibold text-slate-700">Quarterly Payments — 2026</h3><button onclick="showSection('quarterly')" class="text-xs font-semibold text-blue-700 hover:underline" style="background:none;border:none;cursor:pointer;font-family:inherit;">Manage →</button></div>
 <div class="flex items-center gap-3 mb-2"><div class="progress-track flex-1"><div class="progress-fill" style="width:${target?Math.min(100,paid/target*100):0}%;"></div></div><span class="text-xs font-semibold text-slate-600">${fmt$(paid)} / ${fmt$(target)}</span></div>
 <div class="grid grid-cols-4 gap-2 mt-3">${QUARTERS.map((qq,i) => `<div class="p-2 rounded-lg text-center ${q.paid[i]?'bg-emerald-50':'bg-slate-50'}"><div class="text-xs font-semibold ${q.paid[i]?'text-emerald-700':'text-slate-500'}">${qq.q}</div><div class="text-xs font-bold ${q.paid[i]?'text-emerald-700':'text-slate-700'}" style="font-variant-numeric:tabular-nums;">${q.paid[i]?'Paid':fmt$(q.amounts[i])}</div></div>`).join('')}</div></div>`;
+  renderPlanningSnapshot();
+}
+
+function renderPlanningSnapshot(){
+  let host = document.getElementById('dash-planning-snapshot');
+  if(!host){
+    const widgets = document.getElementById('dash-widgets');
+    if(!widgets) return;
+    widgets.insertAdjacentHTML('afterend', '<div id="dash-planning-snapshot"></div>');
+    host = document.getElementById('dash-planning-snapshot');
+  }
+  const tc = window.TC_BASE || null;
+  const sa = window.SA_RESULTS || null;
+  const sc = window.SC_RESULTS || null;
+  const re = window.RE_RESULTS || null;
+  if(!tc){ host.innerHTML = ''; return; }
+
+  const marginalBracket = (ti, filing) => {
+    const brk = filing === 'mfj'
+      ? [[0,.10],[23850,.12],[96950,.22],[206700,.24],[394600,.32],[501050,.35],[751600,.37]]
+      : [[0,.10],[11925,.12],[48475,.22],[103350,.24],[197300,.32],[250525,.35],[626350,.37]];
+    let rate = brk[0][1];
+    for(const [thresh,r] of brk){ if(ti >= thresh) rate = r; }
+    return rate;
+  };
+  const marginal = marginalBracket(tc.taxableIncome, tc.filing);
+  const effRate = tc.agi > 0 ? (tc.totalTax / tc.agi * 100) : 0;
+  const deductionNote = sa ? (sa.shouldItemize ? `Itemizing beats standard by ${fmt$(sa.totalItemized - sa.stdDeduction)}` : `Standard deduction used`) : '';
+  const suspendedLoss = re && re.suspendedLoss > 0 ? re.suspendedLoss : 0;
+
+  host.innerHTML = `
+<div class="card mb-5">
+  <div class="flex items-center justify-between mb-3"><h3 class="text-sm font-semibold text-slate-700">Planning Snapshot — Base Scenario</h3><button onclick="showSection('tax-comparison')" class="text-xs font-semibold text-blue-700 hover:underline" style="background:none;border:none;cursor:pointer;font-family:inherit;">Open Tax Year Comparison →</button></div>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div class="p-3 bg-slate-50 rounded-lg"><div class="text-xs text-slate-500 mb-1">Adjusted Gross Income</div><div class="font-bold text-slate-800">${fmt$(tc.agi)}</div></div>
+    <div class="p-3 bg-slate-50 rounded-lg"><div class="text-xs text-slate-500 mb-1">Taxable Income</div><div class="font-bold text-slate-800">${fmt$(tc.taxableIncome)}</div></div>
+    <div class="p-3 bg-slate-50 rounded-lg"><div class="text-xs text-slate-500 mb-1">Marginal Bracket</div><div class="font-bold text-slate-800">${(marginal*100).toFixed(0)}%</div></div>
+    <div class="p-3 bg-slate-50 rounded-lg"><div class="text-xs text-slate-500 mb-1">Effective Rate (of AGI)</div><div class="font-bold text-slate-800">${effRate.toFixed(1)}%</div></div>
+    <div class="p-3 bg-slate-50 rounded-lg"><div class="text-xs text-slate-500 mb-1">Deduction Used</div><div class="font-bold text-slate-800">${fmt$(tc.deduction)}</div><div class="text-xs text-slate-400 mt-0.5">${deductionNote}</div></div>
+    <div class="p-3 bg-slate-50 rounded-lg"><div class="text-xs text-slate-500 mb-1">QBI Deduction (§199A)</div><div class="font-bold text-slate-800">${sc?fmt$(sc.qbi):'—'}</div></div>
+    <div class="p-3 bg-slate-50 rounded-lg"><div class="text-xs text-slate-500 mb-1">Retirement Contribution</div><div class="font-bold text-slate-800">${fmt$(tc.retirement)}</div><button onclick="showSection('retirement')" class="text-xs text-blue-600 hover:underline" style="background:none;border:none;cursor:pointer;font-family:inherit;padding:0;">Adjust →</button></div>
+    <div class="p-3 rounded-lg ${suspendedLoss>0?'bg-amber-50':'bg-slate-50'}"><div class="text-xs text-slate-500 mb-1">Suspended Passive Losses</div><div class="font-bold ${suspendedLoss>0?'text-amber-700':'text-slate-800'}">${fmt$(suspendedLoss)}</div>${suspendedLoss>0?'<div class=\"text-xs text-amber-600 mt-0.5\">Carried forward — Schedule E</div>':''}</div>
+  </div>
+</div>`;
 }
 
 // ---------- Deadlines ----------
@@ -511,7 +557,8 @@ function syncStateSectionFromClient(){
 }
 
 // ---------- Client report ----------
-const REPORT_SECTIONS = [['position','Current Position'],['charts','Charts & Visuals'],['savings','Savings Opportunities'],['quarterly','Payment Schedule'],['docs','Document Status'],['steps','Next Steps'],['disclaimer','Disclaimer']];
+const REPORT_SECTIONS = [['keyfigures','Key Figures & Tax Breakdown'],['brackets','Marginal Tax Brackets'],['schedulea','Schedule A'],['investment','Investment Tax Efficiency & Income Sources'],['niit','Net Investment Income Tax'],['magi','MAGI Planning Considerations'],['deductions','Deductions & Credits'],['observations','Observations'],['quarterly','Payment Schedule'],['docs','Document Status'],['disclaimer','Disclaimer']];
+const REPORT_FIRM_EMAIL = 'aisayenka@aitaxstrategyadvisors.com';
 function reportOpts(){
   try{ const o = JSON.parse(localStorage.getItem('tap-report-opts')||'null'); if(o) return o; }catch(e){}
   return Object.fromEntries(REPORT_SECTIONS.map(([k]) => [k, true]));
@@ -527,54 +574,212 @@ function renderReportOpts(){
   const o = reportOpts();
   host.innerHTML = REPORT_SECTIONS.map(([k,label]) => `<label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer"><input type="checkbox" class="accent-blue-600 w-4 h-4" ${o[k]?'checked':''} onchange="toggleReportOpt('${k}', this.checked)">${label}</label>`).join('');
 }
-let chartRptComp, chartRptSave;
+
+// Bracket-by-bracket breakdown of ordinary taxable income, mirrors calcFederalTax's tables
+function bracketBreakdown(taxableIncome, filing){
+  const brackets = filing === 'mfj' ? [
+    [0, 23850, 0.10],[23850, 96950, 0.12],[96950, 206700, 0.22],[206700, 394600, 0.24],
+    [394600, 501050, 0.32],[501050, 751600, 0.35],[751600, Infinity, 0.37]
+  ] : [
+    [0, 11925, 0.10],[11925, 48475, 0.12],[48475, 103350, 0.22],[103350, 197300, 0.24],
+    [197300, 250525, 0.32],[250525, 626350, 0.35],[626350, Infinity, 0.37]
+  ];
+  const rows = [];
+  let totalIncome = 0, totalTax = 0, leftInBracket = 0;
+  for(const [lo, hi, rate] of brackets){
+    const amountInBracket = Math.max(0, Math.min(taxableIncome, hi) - lo);
+    const taxForBracket = amountInBracket * rate;
+    rows.push({rate, lo, hi, amountInBracket, taxForBracket});
+    totalIncome += amountInBracket;
+    totalTax += taxForBracket;
+    if(taxableIncome > lo && taxableIncome <= hi) leftInBracket = hi - taxableIncome;
+    if(taxableIncome > hi && hi === Infinity) leftInBracket = 0;
+  }
+  return {rows, totalIncome, totalTax, leftInBracket: isFinite(leftInBracket) ? leftInBracket : 0};
+}
+
+// MAGI-based phase-out reference table, structured like a standard tax-planning report
+function magiPlanningRows(magi, filing){
+  const mfj = filing === 'mfj';
+  const status = (lo, hi) => magi < lo ? 'Below' : (hi != null && magi > hi ? 'Above' : 'Within');
+  const rows = [
+    {label:'Coverdell ESA', lo: mfj?190000:95000, hi: mfj?220000:110000},
+    {label:'Lifetime Learning Credit', lo: mfj?160000:80000, hi: mfj?180000:90000},
+    {label:'American Opportunity Credit', lo: mfj?160000:80000, hi: mfj?180000:90000},
+    {label:'Child Tax Credit', lo: mfj?400000:200000, hi: mfj?400000:200000},
+    {label:'Qualified Adoption Expenses Credit', lo: 259190, hi: 299190},
+    {label:'Savers Credit', lo: mfj?51000:25500, hi: mfj?79000:39500},
+    {label:'Clean Vehicle Credit (New)', lo: 0, hi: mfj?300000:150000},
+    {label:'Clean Vehicle Credit (Used)', lo: 0, hi: mfj?150000:75000},
+    {label:'Net Investment Income Tax', lo: 0, hi: mfj?250000:200000},
+    {label:'Roth IRA Contribution', lo: mfj?236500:150000, hi: mfj?246500:165000},
+    {label:'Student Loan Interest Deduction', lo: mfj?170000:85000, hi: mfj?200000:100000},
+    {label:'IRA Deductibility (Covered by Qualified Plan)', lo: mfj?126000:79000, hi: mfj?146000:89000}
+  ];
+  return rows.map(r => ({...r, status: status(r.lo, r.hi)}));
+}
+
+let chartRptComp, chartRptBrackets, chartRptSchedA, chartRptInvest, chartRptNiit;
 function renderReport(){
   const host = document.getElementById('report-body');
   if(!host) return;
   const c = activeClient();
-  const base = taxEngine({income:c.income, filing:c.filing, state:c.state, invest:c.invest});
-  const retMax = Math.min(70000, 24500 + Math.round(c.income*.25));
-  const scorpPlan = taxEngine({income:c.income, filing:c.filing, state:c.state, invest:c.invest, scorp:true, compPct:.30});
-  const retPlan = taxEngine({income:c.income, filing:c.filing, state:c.state, invest:c.invest, ret:retMax});
-  const hsaPlan = taxEngine({income:c.income, filing:c.filing, state:c.state, invest:c.invest, hsa:true});
-  const allPlan = taxEngine({income:c.income, filing:c.filing, state:c.state, invest:c.invest, scorp:c.income>60000, compPct:.30, ret:retMax, hsa:true});
-  const scorpSave = Math.max(0, base.total - scorpPlan.total - scorpPlan.overhead);
-  const retSave = Math.max(0, base.total - retPlan.total);
-  const hsaSave = Math.max(0, base.total - hsaPlan.total);
-  const allSave = Math.max(0, base.total - allPlan.total - allPlan.overhead);
+  const tc = window.TC_BASE;
+  const sa = window.SA_RESULTS;
+  const sc = window.SC_RESULTS || {netProfit:0, qbi:0};
+  const inv = window.INV_RESULTS || {interest:0, interestExempt:0};
+  const re = window.RE_RESULTS || {allowedAmount:0};
+  if(!tc || !sa){ host.innerHTML = '<div class="text-sm text-slate-500 p-6">Visit the Schedule 1, Schedule A, and Tax Year Comparison tabs first so live figures are available for the report.</div>'; return; }
+
   const q = quarterlyState();
   const today = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   const opts = reportOpts();
   const ds = docsState(); let dTotal = 0, dDone = 0; const dMissing = [];
   DOC_GROUPS.forEach((g,gi) => g.items.forEach((it,ii) => { dTotal++; if(ds[gi+'-'+ii]) dDone++; else dMissing.push(it); }));
+
+  const filingLabel = tc.filing === 'mfj' ? 'Married Filing Jointly' : 'Single';
+  const marginalBracket = (() => {
+    const rows = bracketBreakdown(tc.taxableIncome, tc.filing).rows;
+    let m = rows[0].rate;
+    for(const r of rows){ if(tc.taxableIncome > r.lo) m = r.rate; }
+    return m;
+  })();
+  const effRate = tc.totalTax > 0 && (tc.agi) > 0 ? tc.totalTax / tc.agi * 100 : 0;
+  const totalIncome = tc.wages + tc.interest + tc.divOrdinary + tc.stGains + tc.ltGains + tc.schedC + tc.schedE + tc.otherIncome;
+  const aboveLineDeductions = tc.hsa + tc.retirement + tc.seHealth + tc.halfSeTax + tc.otherDeduct;
+
+  // Additional Medicare Tax — 0.9% on wages + SE net earnings above threshold (not modeled elsewhere in the app yet)
+  const addlMedThresh = tc.filing === 'mfj' ? 250000 : 200000;
+  const seNetEarnings = Math.max(0, tc.schedC) * 0.9235;
+  const addlMedicareTax = 0.009 * Math.max(0, (tc.wages + seNetEarnings) - addlMedThresh);
+  const taxOnOrdinaryIncome = Math.max(0, tc.fedTax);
+  const taxBreakdownTotal = taxOnOrdinaryIncome + tc.seTax + tc.niit + addlMedicareTax;
+
+  const brk = bracketBreakdown(tc.taxableIncome, tc.filing);
+  const magiRows = magiPlanningRows(tc.magi, tc.filing);
+
   host.innerHTML = `
 <div class="flex items-start justify-between pb-5 mb-6" style="border-bottom:3px solid #0b1526;">
-<div><div class="text-xl font-extrabold" style="color:#0b1526;">Tax Advisory Pro</div><div class="text-xs text-slate-500 mt-0.5">2026 Tax Strategy Summary — Prepared ${today}</div></div>
-<div class="text-right text-xs text-slate-500"><div class="font-bold text-slate-800 text-sm">${c.name}</div><div>${c.occupation||''}</div><div>${c.filing==='mfj'?'Married Filing Jointly':'Single'} · ${STATE_NAMES[c.state]||c.state} · Age ${c.age}</div></div>
+<div><div class="text-xl font-extrabold" style="color:#0b1526;">${c.name} — 2026 Tax Report</div><div class="text-xs text-slate-500 mt-0.5">| ${REPORT_FIRM_EMAIL} &nbsp;·&nbsp; Prepared ${today} &nbsp;·&nbsp; Scenario: Base</div></div>
+<div class="text-right text-xs text-slate-500"><div class="font-bold text-slate-800 text-sm">${c.name}</div><div>${c.occupation||''}</div><div>${filingLabel} · ${STATE_NAMES[c.state]||c.state} · Age ${c.age}</div></div>
 </div>
-${opts.position?`<h3 class="font-bold text-slate-800 mb-3">Current Position — Tax Year 2026</h3>
-<table class="ttable mb-6"><tbody>
-<tr><td>Net Business Income</td><td class="text-right font-semibold">${fmt$(c.income)}</td></tr>
-<tr><td>Investment Income</td><td class="text-right font-semibold">${fmt$(c.invest)}</td></tr>
-<tr><td>Federal Income Tax (est.)</td><td class="text-right">${fmt$(base.fed)}</td></tr>
-<tr><td>Self-Employment / FICA Tax</td><td class="text-right">${fmt$(base.seFica)}</td></tr>
-<tr><td>State Income Tax (est.)</td><td class="text-right">${fmt$(base.state)}</td></tr>
-${base.niit>0?`<tr><td>Net Investment Income Tax</td><td class="text-right">${fmt$(base.niit)}</td></tr>`:''}
-<tr class="total"><td>Total Estimated Tax — No Strategies</td><td class="text-right">${fmt$(base.total)}</td></tr>
-<tr><td>Effective Rate</td><td class="text-right">${(base.total/Math.max(1,c.income+c.invest)*100).toFixed(1)}%</td></tr>
-</tbody></table>`:''}
-${opts.charts?`<h3 class="font-bold text-slate-800 mb-3">Visual Summary</h3>
-<div class="grid grid-cols-2 gap-8 mb-6" style="page-break-inside:avoid;">
-<div><div class="text-xs font-semibold text-slate-500 mb-2">Where the ${fmt$(base.total)} goes</div><div style="height:210px;"><canvas id="rpt-chart-comp"></canvas></div></div>
-<div><div class="text-xs font-semibold text-slate-500 mb-2">Estimated savings by strategy</div><div style="height:210px;"><canvas id="rpt-chart-save"></canvas></div></div>
+${opts.keyfigures?`
+<h3 class="font-bold text-slate-800 mb-3">Key Figures</h3>
+<div class="grid grid-cols-3 gap-4 mb-6 text-sm">
+<table class="ttable"><tbody>
+<tr><td>Total Income</td><td class="text-right font-semibold">${fmt$(totalIncome)}</td></tr>
+<tr><td>Above The Line Deductions</td><td class="text-right">${fmt$(aboveLineDeductions)}</td></tr>
+<tr><td>Deductions</td><td class="text-right">${fmt$(sa.totalItemized)}</td></tr>
+<tr><td>Qualified Business Income Deduction</td><td class="text-right">${fmt$(tc.qbi)}</td></tr>
+<tr class="total"><td>Total Tax</td><td class="text-right">${fmt$(tc.totalTax)}</td></tr>
+</tbody></table>
+<table class="ttable"><tbody>
+<tr><td>Deduction Type</td><td class="text-right">${sa.shouldItemize?'Itemized':'Standard'}</td></tr>
+</tbody></table>
+<table class="ttable"><tbody>
+<tr><td>Marginal Bracket</td><td class="text-right">${(marginalBracket*100).toFixed(1)}%</td></tr>
+<tr><td>Effective Rate</td><td class="text-right">${effRate.toFixed(1)}%</td></tr>
+</tbody></table>
+</div>
+<div class="p-5 rounded-lg mb-6" style="background:#eef2f7;page-break-inside:avoid;">
+<div class="text-center text-sm text-slate-500 mb-1">Let's take a look at your</div>
+<div class="text-center font-bold text-slate-800 mb-4">Tax Breakdown</div>
+<div style="height:220px;"><canvas id="rpt-chart-comp"></canvas></div>
+<div class="text-xs text-slate-500 italic mt-3">The chart displays taxes before any credits are applied. Accordingly, there may be a mismatch between Total Tax in the Key Figures section and the sum of the Tax Breakdown components shown here.</div>
 </div>`:''}
-${opts.savings?`<h3 class="font-bold text-slate-800 mb-3">Savings Opportunities</h3>
-<table class="ttable mb-6"><thead><tr><th>Strategy</th><th>Key Action</th><th class="text-right">Est. Annual Savings</th></tr></thead><tbody>
-${c.income>60000?`<tr><td class="font-semibold">S-Corp Election</td><td class="text-slate-500">File Form 2553 by March 15 · 30% reasonable comp</td><td class="text-right font-semibold" style="color:#047857;">${fmt$(scorpSave)}</td></tr>`:''}
-<tr><td class="font-semibold">Solo 401(k) — ${fmt$(retMax)}</td><td class="text-slate-500">Establish by Dec 31 · fund by filing deadline</td><td class="text-right font-semibold" style="color:#047857;">${fmt$(retSave)}</td></tr>
-<tr><td class="font-semibold">HSA Contribution</td><td class="text-slate-500">Requires HDHP enrollment · triple tax benefit</td><td class="text-right font-semibold" style="color:#047857;">${fmt$(hsaSave)}</td></tr>
-<tr class="hl"><td colspan="2" class="font-bold">Combined (strategies interact — not additive)</td><td class="text-right font-bold">${fmt$(allSave)}</td></tr>
+${opts.brackets?`
+<h3 class="font-bold text-slate-800 mb-1">Marginal Tax Brackets: Ordinary Income</h3>
+<p class="text-xs text-slate-500 mb-3">The marginal tax rate for your ordinary income is as follows:</p>
+<div class="grid grid-cols-2 gap-6 mb-6" style="page-break-inside:avoid;">
+<table class="ttable"><thead><tr><th>Marginal Rate</th><th>Threshold</th><th class="text-right">Income</th><th class="text-right">Tax</th></tr></thead><tbody>
+${brk.rows.map(r => `<tr${tc.taxableIncome>r.lo && tc.taxableIncome<=r.hi?' class="hl"':''}><td>${(r.rate*100).toFixed(0)}%</td><td>${fmt$(r.lo)} to ${r.hi===Infinity?'above':fmt$(r.hi)}</td><td class="text-right">${fmt$(r.amountInBracket)}</td><td class="text-right">${fmt$(r.taxForBracket)}</td></tr>`).join('')}
+<tr class="total"><td colspan="2">Total</td><td class="text-right">${fmt$(brk.totalIncome)}</td><td class="text-right">${fmt$(brk.totalTax)}</td></tr>
+</tbody></table>
+<div><div style="height:220px;"><canvas id="rpt-chart-brackets"></canvas></div>
+<div class="text-xs text-slate-500 mt-2">Amount of ordinary income left in current tax bracket: ${fmt$(brk.leftInBracket)}</div></div>
+</div>`:''}
+${opts.schedulea?`
+<h3 class="font-bold text-slate-800 mb-1">Schedule A</h3>
+<p class="text-xs text-slate-500 mb-3">The tax return listed the following items on Schedule A:</p>
+<div class="grid grid-cols-2 gap-6 mb-6" style="page-break-inside:avoid;">
+<div>
+<div class="text-xs font-bold text-slate-500 uppercase mb-2">Itemized Deduction Summary</div>
+<table class="ttable"><thead><tr><th>Deduction</th><th class="text-right">Amount Claimed</th></tr></thead><tbody>
+<tr><td>Medical &amp; Dental Expenses</td><td class="text-right">${fmt$(sa.medicalDeduct)}</td></tr>
+<tr><td>State &amp; Local Taxes</td><td class="text-right">${fmt$(sa.saltAllowed)}</td></tr>
+<tr><td>Mortgage &amp; Investment Interest Expense</td><td class="text-right">${fmt$(sa.interestTotal)}</td></tr>
+<tr><td>Gifts To Charity</td><td class="text-right">${fmt$(sa.charityAllowed)}</td></tr>
+<tr><td>Casualty &amp; Theft Losses</td><td class="text-right">${fmt$(sa.casualtyAllowed)}</td></tr>
+<tr><td>Other (incl. gambling losses)</td><td class="text-right">${fmt$(sa.gamblingAllowed)}</td></tr>
+<tr class="total"><td>Total Itemized Deductions</td><td class="text-right">${fmt$(sa.totalItemized)}</td></tr>
+</tbody></table>
+<p class="text-xs text-slate-500 italic mt-2">${sa.totalItemized > sa.stdDeduction ? `Your total itemized deductions exceeded the standard deduction by ${fmt$(sa.totalItemized - sa.stdDeduction)}` : `The standard deduction (${fmt$(sa.stdDeduction)}) exceeded your itemized total by ${fmt$(sa.stdDeduction - sa.totalItemized)}`}</p>
+</div>
+<div style="height:260px;"><canvas id="rpt-chart-schedA"></canvas></div>
+</div>`:''}
+${opts.investment?`
+<div class="p-5 rounded-lg mb-6" style="background:#eef2f7;page-break-inside:avoid;">
+<div class="text-center font-bold text-slate-800 mb-2">Let's take a look at the tax efficiency of your investment income</div>
+<p class="text-xs text-slate-600 mb-3">Different types of investment income are taxed differently. Non-qualified dividends and short-term capital gains are taxed as ordinary income at higher rates, while qualified dividends and long-term capital gains are taxed at lower preferential rates. Depending on your marginal bracket, it may be more tax efficient to use tax-exempt income vehicles like municipal bonds/bond funds instead of taxable income options.</div>
+<div style="height:220px;"><canvas id="rpt-chart-invest"></canvas></div>
+</div>
+<h3 class="font-bold text-slate-800 mb-1">Schedule C/E — Income Sources</h3>
+<p class="text-xs text-slate-500 mb-3">The tax return listed the following businesses and entities on schedules C or E</p>
+<table class="ttable mb-6"><thead><tr><th>Business Name</th><th class="text-right">Net Profit</th></tr></thead><tbody>
+${tc.schedC ? `<tr><td>${c.occupation || 'Primary Business'} (Schedule C)</td><td class="text-right">${fmt$(tc.schedC)}</td></tr>` : ''}
+${tc.schedE ? `<tr><td>Rental Real Estate (Schedule E)</td><td class="text-right">${fmt$(tc.schedE)}</td></tr>` : ''}
+${!tc.schedC && !tc.schedE ? '<tr><td colspan="2" class="text-slate-400">No Schedule C or E income this scenario</td></tr>' : ''}
 </tbody></table>`:''}
+${opts.niit?`
+<h3 class="font-bold text-slate-800 mb-1">Net Investment Income Tax Summary</h3>
+<p class="text-xs text-slate-500 mb-3">The Net Investment Income Tax (NIIT) is a 3.8% tax on the lesser of investment income or the amount over the income threshold where the NIIT is triggered, which is ${fmt$(tc.niitThreshold)} (${tc.filing==='mfj'?'joint filers':'single filers'}).</p>
+<div class="grid grid-cols-2 gap-6 mb-6" style="page-break-inside:avoid;">
+<table class="ttable"><tbody>
+<tr><td>Modified Adjusted Gross Income</td><td class="text-right">${fmt$(tc.magi)}</td></tr>
+<tr><td>Threshold for Net Investment Income Tax</td><td class="text-right">${fmt$(tc.niitThreshold)}</td></tr>
+<tr><td>Net Investment Income</td><td class="text-right">${fmt$(tc.netInvIncome)}</td></tr>
+<tr><td>Lesser of Net Investment Income or MAGI in excess of threshold</td><td class="text-right">${fmt$(Math.min(tc.netInvIncome, Math.max(0, tc.magi - tc.niitThreshold)))}</td></tr>
+<tr class="total"><td>Net Investment Income Tax</td><td class="text-right">${fmt$(tc.niit)}</td></tr>
+</tbody></table>
+<div style="height:220px;"><canvas id="rpt-chart-niit"></canvas></div>
+</div>`:''}
+${opts.magi?`
+<h3 class="font-bold text-slate-800 mb-1">Modified Adjusted Gross Income (MAGI): Planning Considerations</h3>
+<p class="text-xs text-slate-500 mb-3">Certain deductions and tax incentives phase out as income reaches certain levels, based on your MAGI of ${fmt$(tc.magi)}.</p>
+<table class="ttable mb-6"><thead><tr><th>Item</th><th>Phase-Out Range</th><th class="text-right">Status</th></tr></thead><tbody>
+${magiRows.map(r => `<tr><td>${r.label}</td><td>${fmt$(r.lo)} – ${r.hi!=null?fmt$(r.hi):'no limit'}</td><td class="text-right" style="color:${r.status==='Above'?'#b91c1c':(r.status==='Within'?'#b45309':'#047857')};font-weight:600;">${r.status}</td></tr>`).join('')}
+</tbody></table>`:''}
+${opts.deductions?`
+<h3 class="font-bold text-slate-800 mb-3">Deductions &amp; Credits</h3>
+<p class="text-xs text-slate-500 mb-3">Deductions reduce the amount of income subject to tax while credits reduce taxes dollar for dollar.</p>
+<div class="grid grid-cols-2 gap-6 mb-6" style="page-break-inside:avoid;">
+<div><div class="text-xs font-bold text-slate-500 uppercase mb-2">Deductions</div>
+<table class="ttable"><thead><tr><th>Claimed</th><th class="text-right">Deduction</th></tr></thead><tbody>
+<tr><td>Deductible Part of Self-Employment Tax</td><td class="text-right">${fmt$(tc.halfSeTax)}</td></tr>
+<tr><td>Contributions to Retirement Plans</td><td class="text-right">${fmt$(tc.retirement)}</td></tr>
+<tr><td>Self-Employed Health Insurance</td><td class="text-right">${fmt$(tc.seHealth)}</td></tr>
+<tr><td>HSA Deduction</td><td class="text-right">${fmt$(tc.hsa)}</td></tr>
+<tr><td>State, Local, and Other Taxes Deducted</td><td class="text-right">${fmt$(sa.saltAllowed)}</td></tr>
+<tr><td>Gifts to Charity</td><td class="text-right">${fmt$(sa.charityAllowed)}</td></tr>
+<tr><td>Qualified Business Income Deduction</td><td class="text-right">${fmt$(tc.qbi)}</td></tr>
+</tbody></table></div>
+<div><div class="text-xs font-bold text-slate-500 uppercase mb-2">Credits</div>
+<table class="ttable"><thead><tr><th>Claimed</th><th class="text-right">Amount</th></tr></thead><tbody>
+<tr><td colspan="2" class="text-slate-400">No credits currently modeled for this scenario</td></tr>
+</tbody></table></div>
+</div>`:''}
+${opts.observations?`
+<h3 class="font-bold text-slate-800 mb-3">Observations</h3>
+<ul class="text-sm text-slate-600 space-y-2 mb-6" style="list-style:disc;padding-left:1.25rem;">
+${tc.niit>0?`<li>Income exceeds the threshold for the 3.8% Net Investment Income Tax (NIIT). Consider strategies to reduce taxable income and be mindful of realized capital gains.</li>`:''}
+${tc.taxableIncome>197300 && tc.taxableIncome<250000?`<li>The Qualified Business Income (QBI) deduction phases out between $197,300 and $247,300 for certain specified service trades or businesses (SSTB). Your taxable income falls in this range — if your business is an SSTB, your QBI eligibility may be impacted.</li>`:''}
+${tc.magi>=(tc.filing==='mfj'?236500:150000)?`<li>Your Modified Adjusted Gross Income (MAGI) suggests you are not eligible to contribute directly to a Roth IRA. You do have eligible compensation though, so you might discuss the feasibility of the "Backdoor Roth" strategy.</li>`:''}
+${sa.saltAllowed < (tc.filing==='mfs'?20200:40400)?`<li>You are not using the full state and local tax itemized deduction. If you pay property taxes, you may research paying those taxes in alternating years.</li>`:''}
+${sa.charityAllowed>10000?`<li>You had charitable contributions in excess of $10,000. If you plan similar donations in future years, consider grouping them into alternating tax years to maximize your deductions. A "Donor Advised Fund" can facilitate this strategy.</li>`:''}
+${tc.hsa===0?`<li>Your return does not list any HSA contributions. If you are eligible to contribute to an HSA, you will get a tax deduction, regardless of whether you itemize or take the standard deduction.</li>`:''}
+<li>Based on the total tax estimate, the minimum amount of withholding/estimated payments needed in 2026 to avoid an underpayment penalty is 90% of the total tax, or ${fmt$(tc.totalTax*0.9)}. Alternatively, the "safe harbor" amount can be calculated from the prior year's total tax and AGI.</li>
+${tc.magi>150000?`<li>Your MAGI may be high enough to affect eligibility for the new and used clean vehicle credits — MAGI from either the year of delivery or the prior year (whichever is less) can be used to test eligibility. Note the credit is not available for vehicles purchased after September 30, 2025.</li>`:''}
+</ul>`:''}
 ${opts.quarterly?`<h3 class="font-bold text-slate-800 mb-3">2026 Estimated Payment Schedule</h3>
 <table class="ttable mb-6"><thead><tr><th>Quarter</th><th>Due Date</th><th class="text-right">Amount</th><th>Status</th></tr></thead><tbody>
 ${QUARTERS.map((qq,i) => `<tr><td>${qq.q} 2026</td><td>${fmtDate(qq.due)}</td><td class="text-right">${fmt$(q.amounts[i])}</td><td>${q.paid[i]?'Paid '+(q.dates[i]||''):'Scheduled'}</td></tr>`).join('')}
@@ -584,44 +789,70 @@ ${opts.docs?`<h3 class="font-bold text-slate-800 mb-3">Document Status</h3>
 <div class="mb-2"><span class="font-semibold text-slate-800">${dDone} of ${dTotal}</span> tax-prep documents received.</div>
 ${dMissing.length?`<div class="text-xs font-semibold text-slate-500 mb-1">Still outstanding:</div><ul class="text-sm space-y-0.5" style="list-style:disc;padding-left:1.25rem;">${dMissing.slice(0,8).map(m => `<li>${m}</li>`).join('')}${dMissing.length>8?`<li class="text-slate-400">…and ${dMissing.length-8} more</li>`:''}</ul>`:'<div style="color:#047857;">All documents received — ready for preparation.</div>'}
 </div>`:''}
-${opts.steps?`<h3 class="font-bold text-slate-800 mb-3">Next Steps</h3>
-<ol class="text-sm text-slate-600 space-y-1.5 mb-6" style="list-style:decimal;padding-left:1.25rem;">
-${c.income>60000?'<li>Confirm S-Corp election decision and reasonable compensation documentation before the Form 2553 deadline.</li>':''}
-<li>Open a Solo 401(k) account before December 31, 2026 to preserve the contribution window.</li>
-<li>Stay current on quarterly estimated payments to remain within the safe harbor.</li>
-<li>Deliver outstanding documents from the checklist so year-end projections stay accurate.</li>
-<li>Schedule a Q4 planning session to time income and deductions before year-end.</li>
-</ol>`:''}
-${opts.disclaimer?`<div class="p-3 bg-slate-50 rounded-lg text-xs text-slate-500" style="border:1px solid #e4e7ec;">All figures are planning estimates based on 2026 federal brackets, OBBBA provisions and simplified state rate tables. They are not a tax return, projection of record, or legal/tax advice. Please review with your licensed CPA before acting.</div>`:''}`;
-  if(opts.charts && typeof Chart !== 'undefined'){
-    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#1d4ed8';
-    const deep = getComputedStyle(document.documentElement).getPropertyValue('--accent-deep').trim() || '#1e40af';
+${opts.disclaimer?`<div class="p-3 bg-slate-50 rounded-lg text-xs text-slate-500" style="border:1px solid #e4e7ec;">All figures are planning estimates based on 2026 federal brackets, OBBBA provisions and simplified state rate tables, live from the Base scenario in Tax Year Comparison. They are not a tax return, projection of record, or legal/tax advice. Please review with your licensed CPA before acting.</div>`:''}`;
+
+  if(typeof Chart === 'undefined') return;
+  const navy = '#0b3d6e', blue1 = '#1d6fa5', blue2 = '#2a9fd6', blue3 = '#7bcaf0';
+
+  if(opts.keyfigures){
     if(chartRptComp) chartRptComp.destroy();
-    if(chartRptSave) chartRptSave.destroy();
     const compEl = document.getElementById('rpt-chart-comp');
-    const saveEl = document.getElementById('rpt-chart-save');
     if(compEl){
-      const dl = [['Federal income tax',base.fed,accent],['SE / FICA',base.seFica,deep],['State tax',base.state,'#94a3b8']];
-      if(base.niit>0) dl.push(['NIIT',base.niit,'#b45309']);
-      chartRptComp = new Chart(compEl, { type:'doughnut',
-        data:{ labels:dl.map(d=>d[0]), datasets:[{ data:dl.map(d=>Math.round(d[1])), backgroundColor:dl.map(d=>d[2]), borderWidth:2, borderColor:'#fff' }] },
-        options:{ responsive:true, maintainAspectRatio:false, animation:false, cutout:'58%',
-          plugins:{ legend:{ position:'right', labels:{ boxWidth:10, font:{ size:11 } } },
-            tooltip:{ callbacks:{ label: ctx => ` ${ctx.label}: ${fmt$(ctx.parsed)}` } } } } });
+      const dl = [['Tax on Ordinary Income',taxOnOrdinaryIncome,navy],['Self-Employment Tax',tc.seTax,blue1],['Net Investment Income Tax',tc.niit,blue2],['Additional Medicare Tax',addlMedicareTax,blue3]].filter(d=>d[1]>0.5);
+      chartRptComp = new Chart(compEl, { type:'pie',
+        data:{ labels:dl.map(d=>`${d[0]}  ${fmt$(d[1])} | ${(d[1]/taxBreakdownTotal*100).toFixed(1)}%`), datasets:[{ data:dl.map(d=>Math.round(d[1])), backgroundColor:dl.map(d=>d[2]), borderWidth:2, borderColor:'#fff' }] },
+        options:{ responsive:true, maintainAspectRatio:false, animation:false,
+          plugins:{ legend:{ position:'right', labels:{ boxWidth:10, font:{ size:10 } } },
+            tooltip:{ callbacks:{ label: ctx => ` ${fmt$(ctx.parsed)}` } } } } });
     }
-    if(saveEl){
-      const bars = [];
-      if(c.income>60000) bars.push(['S-Corp election',scorpSave]);
-      bars.push(['Solo 401(k)',retSave],['HSA',hsaSave],['Combined',allSave]);
-      chartRptSave = new Chart(saveEl, { type:'bar',
-        data:{ labels:bars.map(b=>b[0]), datasets:[{ data:bars.map(b=>Math.round(b[1])), backgroundColor:bars.map((b,i)=> b[0]==='Combined' ? '#047857' : accent), borderRadius:4, maxBarThickness:44 }] },
+  }
+  if(opts.brackets){
+    if(chartRptBrackets) chartRptBrackets.destroy();
+    const brkEl = document.getElementById('rpt-chart-brackets');
+    if(brkEl){
+      const active = brk.rows.filter(r => r.amountInBracket > 0);
+      chartRptBrackets = new Chart(brkEl, { type:'bar',
+        data:{ labels:active.map(r=>`${(r.rate*100).toFixed(0)}%`), datasets:[{ label:'Ordinary Income', data:active.map(r=>Math.round(r.amountInBracket)), backgroundColor:navy, maxBarThickness:44 }] },
         options:{ responsive:true, maintainAspectRatio:false, animation:false,
           plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: ctx => ' ' + fmt$(ctx.parsed.y) } } },
           scales:{ y:{ ticks:{ callback:v=>'$'+(v/1000)+'k', font:{ size:11 } }, grid:{ color:'#f1f3f6' } }, x:{ ticks:{ font:{ size:11 } }, grid:{ display:false } } } } });
     }
   }
+  if(opts.schedulea){
+    if(chartRptSchedA) chartRptSchedA.destroy();
+    const saEl = document.getElementById('rpt-chart-schedA');
+    if(saEl){
+      const parts = [['State & Local Tax',sa.saltAllowed,navy],['Mortgage Interest',0,blue1],['Medical Expenses',sa.medicalDeduct,blue2],['Casualty & Theft',sa.casualtyAllowed,blue3],['Other',sa.gamblingAllowed,'#a8dcf4'],['Charitable Donations',sa.charityAllowed,'#cdeafb']];
+      chartRptSchedA = new Chart(saEl, { type:'bar',
+        data:{ labels:['Itemized Total'], datasets: parts.map(p => ({ label:p[0], data:[Math.round(p[1])], backgroundColor:p[2] })) },
+        options:{ responsive:true, maintainAspectRatio:false, animation:false, indexAxis:'y',
+          plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{ size:10 } } } },
+          scales:{ x:{ stacked:true, ticks:{ callback:v=>'$'+(v/1000)+'k' } }, y:{ stacked:true } } } });
+    }
+  }
+  if(opts.investment){
+    if(chartRptInvest) chartRptInvest.destroy();
+    const invEl = document.getElementById('rpt-chart-invest');
+    if(invEl){
+      chartRptInvest = new Chart(invEl, { type:'bar',
+        data:{ labels:['Interest'], datasets:[{ label:'Taxable', data:[Math.round(inv.interest)], backgroundColor:navy, maxBarThickness:60 },{ label:'Tax-Exempt', data:[Math.round(inv.interestExempt)], backgroundColor:blue3, maxBarThickness:60 }] },
+        options:{ responsive:true, maintainAspectRatio:false, animation:false,
+          plugins:{ legend:{ position:'bottom' } },
+          scales:{ y:{ ticks:{ callback:v=>'$'+v.toLocaleString() } } } } });
+    }
+  }
+  if(opts.niit){
+    if(chartRptNiit) chartRptNiit.destroy();
+    const niitEl = document.getElementById('rpt-chart-niit');
+    if(niitEl){
+      chartRptNiit = new Chart(niitEl, { type:'bar',
+        data:{ labels:['MAGI'], datasets:[{ label:'Below Threshold', data:[Math.min(tc.magi, tc.niitThreshold)], backgroundColor:blue3, maxBarThickness:80 },{ label:'Net Investment Income (taxed at 3.8%)', data:[Math.max(0, tc.magi - tc.niitThreshold)], backgroundColor:navy, maxBarThickness:80 }] },
+        options:{ responsive:true, maintainAspectRatio:false, animation:false,
+          plugins:{ legend:{ position:'bottom' } },
+          scales:{ x:{ stacked:true }, y:{ stacked:true, ticks:{ callback:v=>'$'+(v/1000)+'k' } } } } });
+    }
+  }
 }
-
 // ---------- Refresh + init ----------
 // ---------- Excel export ----------
 function exportToExcel(){
@@ -678,7 +909,9 @@ if(typeof showSection === 'function'){
       'client-report': () => { renderReportOpts(); renderReport(); },
       'schedule-a': () => { if(typeof calcScheduleA === 'function') calcScheduleA(); },
       'schedule-1': () => { if(typeof calcSchedule1 === 'function') calcSchedule1(); },
-      'investment-income': () => { if(typeof calcInvestmentIncome === 'function') calcInvestmentIncome(); }
+      'investment-income': () => { if(typeof calcInvestmentIncome === 'function') calcInvestmentIncome(); },
+      'schedule-e': () => { if(typeof calcRealEstate === 'function') calcRealEstate(); },
+      'tax-comparison': () => { if(typeof calcTaxComparison === 'function') calcTaxComparison(); }
     };
     if(recalc[id]) recalc[id]();
   };
@@ -735,7 +968,9 @@ function syncCalculatorsFromClient(c){
   setVal('ret-income', c.income); setVal('ret-age', c.age); setVal('ret-status', c.filing);
   setVal('veh-biz-miles', c.miles);
   setVal('sa-agi', Math.round(estimateClientAGI(c))); setVal('sa-filing', c.filing);
-  [calcScheduleC, calcHomeOffice, calcVehicle, calcScorp, calcRetirement, calcScheduleA, calcInvestmentIncome, calcSchedule1]
+  setVal('re-agi', Math.round(estimateClientAGI(c)));
+  setVal('tc-base-filing', c.filing);
+  [calcScheduleC, calcHomeOffice, calcVehicle, calcScorp, calcRetirement, calcScheduleA, calcRealEstate, calcInvestmentIncome, calcSchedule1]
     .forEach(fn => { try{ if(typeof fn === 'function') fn(); }catch(e){} });
   renderProfileSummary();
   const nameEl = document.getElementById('sidebar-client-name'); if(nameEl) nameEl.textContent = c.name;

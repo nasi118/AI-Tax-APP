@@ -32,6 +32,18 @@ a{color:var(--accent-deep)}a:hover{color:var(--accent)}
 .nav-group.closed .nav-group-label svg{transform:rotate(-90deg)}
 .nav-group.closed .nav-group-items{display:none}
 .client-switch{width:100%;background:#16233c;border:1px solid #24334f;color:#e2e8f0;border-radius:8px;padding:.5rem .6rem;font-size:.82rem;font-weight:600;font-family:inherit;outline:none;cursor:pointer}
+.sidebar-pin-btn{background:transparent;border:none;cursor:pointer;color:#5b6b84;padding:.4rem;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,color .12s}
+.sidebar-pin-btn:hover{background:#16233c;color:#94a3b8}
+.sidebar-pin-btn.active{color:#fff;background:var(--accent)}
+.sidebar-pin-btn.active:hover{background:var(--accent-deep)}
+body.sb-light .sidebar-pin-btn{color:#98a2b3}
+body.sb-light .sidebar-pin-btn:hover{background:#f1f3f6;color:#667085}
+@media (min-width:1025px){
+#sidebar{transition:transform .2s ease}
+body:not(.sidebar-pinned) #sidebar{transform:translateX(calc(-100% + 6px))}
+body:not(.sidebar-pinned) #sidebar:hover{transform:translateX(0);box-shadow:2px 0 28px rgba(0,0,0,.22)}
+body:not(.sidebar-pinned) #main-content{margin-left:0!important}
+}
 .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:var(--pad);box-shadow:0 1px 2px rgba(16,24,40,.04)}
 .card-chart{padding:1rem 1.25rem 1.1rem}
 .kpi{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:1.1rem 1.25rem;border-left:3px solid;box-shadow:0 1px 2px rgba(16,24,40,.04)}
@@ -126,7 +138,7 @@ body{background:#fff}
 
 <!-- ======== SIDEBAR ======== -->
 <aside id="sidebar" class="flex flex-col h-screen fixed left-0 top-0 z-30 overflow-y-auto" style="width:264px;background:var(--navy);">
-<div class="px-5 py-4 border-b sb-border" style="border-color:#1c2942;">
+<div class="px-5 py-4 border-b sb-border flex items-center justify-between" style="border-color:#1c2942;">
 <div class="flex items-center gap-3">
 <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:var(--accent);">
 <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
@@ -136,6 +148,9 @@ body{background:#fff}
 <div class="text-xs sb-dim" style="color:#5b6b84;">2026 Strategy Platform</div>
 </div>
 </div>
+<button id="sidebar-pin-btn" class="sidebar-pin-btn" onclick="toggleSidebarPin()" title="Pin sidebar open" aria-pressed="false" aria-label="Pin sidebar open">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+</button>
 </div>
 <div class="mx-3 mt-3">
 <div class="text-xs font-bold uppercase tracking-wide mb-1.5 sb-dim" style="color:#5b6b84;letter-spacing:.08em;">Active Client</div>

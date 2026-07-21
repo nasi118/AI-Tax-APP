@@ -23,6 +23,33 @@ function toggleNavGroup(btn){
   }catch(e){}
 })();
 
+// ---------- Sidebar pin ----------
+// Unpinned: sidebar auto-hides (peeks 6px at the edge, expands on hover) — desktop only, see CSS.
+// Pinned: sidebar stays open and docked, same as the original fixed layout.
+function setSidebarPin(pinned, opts){
+  opts = opts || {};
+  document.body.classList.toggle('sidebar-pinned', pinned);
+  const btn = document.getElementById('sidebar-pin-btn');
+  if(btn){
+    btn.classList.toggle('active', pinned);
+    btn.setAttribute('aria-pressed', pinned ? 'true' : 'false');
+    const label = pinned ? 'Unpin sidebar' : 'Pin sidebar open';
+    btn.title = label;
+    btn.setAttribute('aria-label', label);
+  }
+  if(!opts.skipSave){
+    try{ localStorage.setItem('tap-sidebar-pinned', pinned ? '1' : '0'); }catch(e){}
+  }
+}
+function toggleSidebarPin(){
+  setSidebarPin(!document.body.classList.contains('sidebar-pinned'));
+}
+(function restoreSidebarPin(){
+  let pinned = false;
+  try{ pinned = localStorage.getItem('tap-sidebar-pinned') === '1'; }catch(e){}
+  setSidebarPin(pinned, {skipSave:true});
+})();
+
 // ---------- State tax model ----------
 const STATES = [['CA','California'],['NY','New York'],['TX','Texas'],['FL','Florida'],['WA','Washington'],['NV','Nevada'],['TN','Tennessee'],['AZ','Arizona'],['CO','Colorado'],['GA','Georgia'],['IL','Illinois'],['MA','Massachusetts'],['MI','Michigan'],['NC','North Carolina'],['NJ','New Jersey'],['OH','Ohio'],['OR','Oregon'],['PA','Pennsylvania'],['VA','Virginia'],['OTHER','Other (5% est.)']];
 const STATE_NAMES = Object.fromEntries(STATES);

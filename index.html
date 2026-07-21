@@ -2364,7 +2364,7 @@ body{background:#fff}
 <div id="section-ai-strategist" class="content-section">
   <div class="mb-6">
     <h1 class="text-2xl font-extrabold text-slate-900">AI Tax Strategist</h1>
-    <p class="text-slate-500 text-sm mt-1">Ask any tax question — powered by Grok with live web search, pre-loaded with 2026 tax law and Sarah's profile</p>
+    <p class="text-slate-500 text-sm mt-1">Ask any tax question — powered by Grok, pre-loaded with 2026 tax law and Sarah's profile</p>
   </div>
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Config panel -->
@@ -2374,18 +2374,20 @@ body{background:#fff}
         <div>
           <label class="form-label">xAI (Grok) API Key</label>
           <input type="password" class="form-input" id="ai-api-key" placeholder="Paste your API key here">
-          <div class="text-xs text-slate-400 mt-1.5">Get a key at <a href="https://console.x.ai" target="_blank" class="text-blue-500 underline">console.x.ai</a></div>
+          <div class="text-xs text-slate-400 mt-1.5">Get a key at <a href="https://console.x.ai" target="_blank" class="text-blue-500 underline">console.x.ai</a> &middot; <button type="button" onclick="clearSavedApiKey()" class="text-blue-500 underline">Clear saved key</button></div>
         </div>
         <div class="mt-3">
           <label class="form-label">AI Model</label>
           <select class="form-select" id="ai-model">
-            <option value="grok-3-mini">Grok 3 mini (Fast)</option>
-            <option value="grok-4" selected>Grok 4 (Best)</option>
+            <option value="grok-4.5" selected>Grok 4.5 (Best)</option>
+            <option value="grok-4-fast">Grok 4 Fast</option>
+            <option value="grok-4">Grok 4</option>
+            <option value="grok-3-mini">Grok 3 mini (Fastest)</option>
             <option value="grok-3">Grok 3</option>
           </select>
         </div>
         <div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
-          Your API key is used only in your browser — never stored or transmitted to any server other than Google.
+          Your API key is saved locally in this browser (localStorage) only, so it persists across reloads on this device. It is sent directly from your browser to xAI's API and never passes through or is stored on any of our servers.
         </div>
       </div>
       <div class="card">
@@ -2413,7 +2415,7 @@ body{background:#fff}
               <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
             </div>
             <div class="bubble-ai">
-              Hello! I'm your AI Tax Strategist, pre-loaded with 2026 federal tax law, OBBBA provisions, and Sarah Mitchell's complete tax profile. I can help you with strategy analysis, planning scenarios, client communications, and tax law research. Enter your Gemini API key and ask me anything — or click a quick prompt to get started!
+              Hello! I'm your AI Tax Strategist, pre-loaded with 2026 federal tax law, OBBBA provisions, and Sarah Mitchell's complete tax profile. I can help you with strategy analysis, planning scenarios, client communications, and tax law research. Enter your xAI API key and ask me anything — or click a quick prompt to get started!
             </div>
           </div>
         </div>
@@ -4008,8 +4010,25 @@ function handleAiKey(e) {
   }
 }
 
+const AI_KEY_STORAGE = 'ai_tax_strategist_api_key';
+
+function clearSavedApiKey() {
+  try { localStorage.removeItem(AI_KEY_STORAGE); } catch (e) {}
+  const el = document.getElementById('ai-api-key');
+  if (el) el.value = '';
+}
+
+function restoreSavedApiKey() {
+  try {
+    const saved = localStorage.getItem(AI_KEY_STORAGE);
+    const el = document.getElementById('ai-api-key');
+    if (saved && el) el.value = saved;
+  } catch (e) {}
+}
+
 async function sendToAI() {
-  const apiKey = document.getElementById('ai-api-key').value.trim();
+  const apiKeyEl = document.getElementById('ai-api-key');
+  const apiKey = apiKeyEl.value.trim();
   const model = document.getElementById('ai-model').value;
   const input = document.getElementById('ai-input').value.trim();
   if (!input) return;
@@ -4018,6 +4037,8 @@ async function sendToAI() {
     appendChat('ai', '⚠️ Please enter your xAI API key in the configuration panel to use the AI Strategist. You can get a key at console.x.ai.');
     return;
   }
+
+  try { localStorage.setItem(AI_KEY_STORAGE, apiKey); } catch (e) {}
 
   appendChat('user', input);
   document.getElementById('ai-input').value = '';
@@ -4029,32 +4050,35 @@ async function sendToAI() {
   chatHistory.push({ role: 'user', content: input });
 
   try {
-    const payload = {
-      model: model,
-      instructions: AI_SYSTEM_PROMPT,
-      tools: [{ type: 'web_search' }],
-      input: chatHistory
-    };
-    const res = await fetch('https://api.x.ai/v1/responses', {
+    const messages = [{ role: 'system', content: AI_SYSTEM_PROMPT }, ...chatHistory];
+    const res = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ model: model, messages: messages, temperature: 0.3 })
     });
+
+    const raw = await res.text();
+    let data = null;
+    try { data = raw ? JSON.parse(raw) : null; } catch (e) {}
+
     if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(errData?.error?.message || `HTTP ${res.status}`);
+      const detail = data?.error?.message || data?.error || raw || res.statusText;
+      throw new Error(`HTTP ${res.status} — ${typeof detail === 'string' ? detail : JSON.stringify(detail)}`);
     }
-    const data = await res.json();
-    const reply = (data?.output || [])
-      .filter(item => item.type === 'message')
-      .flatMap(item => item.content || [])
-      .filter(c => c.type === 'output_text')
-      .map(c => c.text)
-      .join('\n') || 'No response received.';
+
+    const reply = data?.choices?.[0]?.message?.content
+      || data?.choices?.[0]?.text
+      || 'No response received.';
+
     chatHistory.push({ role: 'assistant', content: reply });
     appendChat('ai', reply);
   } catch (err) {
-    appendChat('ai', `❌ Error: ${err.message}. Please check your API key and try again.`);
+    chatHistory.pop();
+    const msg = err?.message || String(err);
+    const hint = /Failed to fetch|NetworkError|CORS/i.test(msg)
+      ? ' This may be a network restriction blocking requests to api.x.ai from this environment — try again from a standard browser tab with normal internet access.'
+      : '';
+    appendChat('ai', `❌ Error: ${msg}.${hint} Please check your API key and model selection, then try again.`);
   } finally {
     sendBtn.disabled = false;
     sendBtn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg> Send';
@@ -4094,6 +4118,7 @@ function clearChat() {
 // INIT
 // ================================================================
 document.addEventListener('DOMContentLoaded', () => {
+  try { restoreSavedApiKey(); } catch (e) {}
   try { initDashboardCharts(); } catch (e) {}
   try { calcScheduleC(); } catch (e) {}
   try { calcScheduleA(); } catch (e) {}

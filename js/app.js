@@ -158,6 +158,7 @@ function applyCustomClient(c){
   setVal('ret-status', c.filing); setVal('veh-biz-miles', c.miles);
   setVal('sa-agi', Math.round(estimateClientAGI(c))); setVal('sa-filing', c.filing);
   setVal('re-agi', Math.round(estimateClientAGI(c)));
+  setVal('tc-base-filing', c.filing);
   [calcScheduleC, calcHomeOffice, calcVehicle, calcScorp, calcRetirement, calcScheduleA, calcRealEstate, calcInvestmentIncome, calcSchedule1]
     .forEach(fn => { try{ if(typeof fn === 'function') fn(); }catch(e){} });
   const nameEl = document.getElementById('sidebar-client-name'); if(nameEl) nameEl.textContent = c.name;
@@ -680,7 +681,8 @@ if(typeof showSection === 'function'){
       'schedule-a': () => { if(typeof calcScheduleA === 'function') calcScheduleA(); },
       'schedule-1': () => { if(typeof calcSchedule1 === 'function') calcSchedule1(); },
       'investment-income': () => { if(typeof calcInvestmentIncome === 'function') calcInvestmentIncome(); },
-      'schedule-e': () => { if(typeof calcRealEstate === 'function') calcRealEstate(); }
+      'schedule-e': () => { if(typeof calcRealEstate === 'function') calcRealEstate(); },
+      'tax-comparison': () => { if(typeof calcTaxComparison === 'function') calcTaxComparison(); }
     };
     if(recalc[id]) recalc[id]();
   };
@@ -738,6 +740,7 @@ function syncCalculatorsFromClient(c){
   setVal('veh-biz-miles', c.miles);
   setVal('sa-agi', Math.round(estimateClientAGI(c))); setVal('sa-filing', c.filing);
   setVal('re-agi', Math.round(estimateClientAGI(c)));
+  setVal('tc-base-filing', c.filing);
   [calcScheduleC, calcHomeOffice, calcVehicle, calcScorp, calcRetirement, calcScheduleA, calcRealEstate, calcInvestmentIncome, calcSchedule1]
     .forEach(fn => { try{ if(typeof fn === 'function') fn(); }catch(e){} });
   renderProfileSummary();

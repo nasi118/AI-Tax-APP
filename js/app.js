@@ -156,7 +156,8 @@ function applyCustomClient(c){
   ['sc-returns','sc-cogs','sc-advertising','sc-vehicle','sc-commissions','sc-contract','sc-insurance','sc-legal','sc-office','sc-homeoffice','sc-supplies','sc-phone','sc-travel','sc-meals','sc-education','sc-licenses','sc-other'].forEach(id => setVal(id,0));
   setVal('sc2-profit', c.income); setVal('ret-income', c.income); setVal('ret-age', c.age);
   setVal('ret-status', c.filing); setVal('veh-biz-miles', c.miles);
-  try{ calcScheduleC(); calcHomeOffice(); calcVehicle(); calcScorp(); calcRetirement(); }catch(e){}
+  setVal('sa-agi', Math.round(estimateClientAGI(c))); setVal('sa-filing', c.filing);
+  try{ calcScheduleC(); calcHomeOffice(); calcVehicle(); calcScorp(); calcRetirement(); calcScheduleA(); }catch(e){}
   const nameEl = document.getElementById('sidebar-client-name'); if(nameEl) nameEl.textContent = c.name;
   showToast('Loaded: ' + c.name);
 }
@@ -673,10 +674,19 @@ if(typeof showSection === 'function'){
       'deadlines': renderDeadlines,
       'whatif': calcWhatIf,
       'state-tax': calcStateSection,
-      'client-report': () => { renderReportOpts(); renderReport(); }
+      'client-report': () => { renderReportOpts(); renderReport(); },
+      'schedule-a': () => { if(typeof calcScheduleA === 'function') calcScheduleA(); }
     };
     if(recalc[id]) recalc[id]();
   };
+}
+// AGI estimate shared with the Client Profile summary table, used to seed Schedule A
+function estimateClientAGI(c){
+  const rentNet = Math.round((c.rental||0) * 0.30);
+  const seBase = Math.max(0, c.income) * .9235;
+  const seTax = Math.min(seBase, FICA_BASE) * .124 + seBase * .029;
+  const halfSE = seTax / 2;
+  return c.income + (c.invest||0) + rentNet - halfSE;
 }
 // live "Estimated 2026 Tax Profile Summary" table on the Client Profile tab
 function renderProfileSummary(){
@@ -721,7 +731,8 @@ function syncCalculatorsFromClient(c){
   setVal('sc2-profit', c.income);
   setVal('ret-income', c.income); setVal('ret-age', c.age); setVal('ret-status', c.filing);
   setVal('veh-biz-miles', c.miles);
-  try{ calcScheduleC(); calcHomeOffice(); calcVehicle(); calcScorp(); calcRetirement(); }catch(e){}
+  setVal('sa-agi', Math.round(estimateClientAGI(c))); setVal('sa-filing', c.filing);
+  try{ calcScheduleC(); calcHomeOffice(); calcVehicle(); calcScorp(); calcRetirement(); calcScheduleA(); }catch(e){}
   renderProfileSummary();
   const nameEl = document.getElementById('sidebar-client-name'); if(nameEl) nameEl.textContent = c.name;
 }

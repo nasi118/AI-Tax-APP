@@ -3257,8 +3257,10 @@ function calcTaxComparison() {
 
   window.TC_BASE = { wages: baseWages, interest: inv.interest, divOrdinary: inv.divOrdinary, divQualified: inv.divQualified,
     stGains: inv.stGains, ltGains: inv.ltGains, schedC: sc.netProfit, schedE: re.allowedAmount, otherIncome: s1.otherIncome,
-    hsa: s1.hsa, retirement: s1.retirement, seHealth: s1.seHealthIns, otherDeduct: s1.otherDeductions,
-    deduction: sa.deductionUsed, filing: baseFiling, agi: baseAGI, taxableIncome: baseTaxableIncome, totalTax: baseTotalTax };
+    hsa: s1.hsa, retirement: s1.retirement, seHealth: s1.seHealthIns, otherDeduct: s1.otherDeductions, halfSeTax: s1.halfSeTax,
+    deduction: sa.deductionUsed, qbi: sc.qbi, filing: baseFiling, agi: baseAGI, magi: baseAGI, taxableIncome: baseTaxableIncome,
+    fedTax: baseFedTax, seTax: baseSeTax, niit: baseNiit, netInvIncome: baseNetInvIncome, niitThreshold: baseNiitThresh,
+    totalTax: baseTotalTax };
 
   // ---- Scenario columns: fully editable, formulas recompute live ----
   [1, 2, 3].forEach(n => {
@@ -3521,7 +3523,8 @@ function calcScheduleA() {
 
   show('sa-alert-gambling', gamblingLosses > 0);
 
-  window.SA_RESULTS = { agi, stdDeduction, totalItemized, shouldItemize, deductionUsed: Math.max(stdDeduction, totalItemized) };
+  window.SA_RESULTS = { agi, stdDeduction, totalItemized, shouldItemize, deductionUsed: Math.max(stdDeduction, totalItemized),
+    medicalDeduct, saltAllowed, interestTotal, charityAllowed, casualtyAllowed, gamblingAllowed };
 }
 // ================================================================
 // REAL ESTATE CALCULATIONS

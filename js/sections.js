@@ -34,8 +34,8 @@ wrap.insertAdjacentHTML('beforeend', `
 
 <!-- SECTION: WHAT-IF PLANNER -->
 <div id="section-whatif" class="content-section">
-<div class="mb-6"><h1 class="text-2xl font-extrabold text-slate-900">What-If Planner</h1>
-<p class="text-slate-500 text-sm mt-1">Drag the levers and watch the total tax picture respond — federal, SE/FICA, and state combined</p></div>
+<div class="mb-6 flex items-start justify-between gap-4"><div><h1 class="text-2xl font-extrabold text-slate-900">What-If Planner</h1>
+<p class="text-slate-500 text-sm mt-1">Drag the levers and watch the total tax picture respond — federal, SE/FICA, and state combined</p></div><button onclick="calcWhatIf()" class="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Recalculate</button></div>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 <div class="lg:col-span-1 space-y-4">
 <div class="card">
@@ -91,8 +91,8 @@ wrap.insertAdjacentHTML('beforeend', `
 
 <!-- SECTION: QUARTERLY PAYMENTS -->
 <div id="section-quarterly" class="content-section">
-<div class="mb-6"><h1 class="text-2xl font-extrabold text-slate-900">Quarterly Estimated Payments</h1>
-<p class="text-slate-500 text-sm mt-1">Track 2026 estimated tax payments against the safe harbor — per client, saved in this browser</p></div>
+<div class="mb-6 flex items-start justify-between gap-4"><div><h1 class="text-2xl font-extrabold text-slate-900">Quarterly Estimated Payments</h1>
+<p class="text-slate-500 text-sm mt-1">Track 2026 estimated tax payments against the safe harbor — per client, saved in this browser</p></div><button onclick="renderQuarterly()" class="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Recalculate</button></div>
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
 <div class="kpi" style="border-left-color:#1e3a8a;"><div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Safe Harbor Target</div><div class="kpi-value text-slate-900" id="qt-k-target">—</div><div class="text-xs text-slate-400 mt-1" id="qt-k-target-note">—</div></div>
 <div class="kpi" style="border-left-color:#047857;"><div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Paid to Date</div><div class="kpi-value" style="color:#047857;" id="qt-k-paid">—</div><div class="text-xs text-slate-400 mt-1" id="qt-k-paid-note">—</div></div>
@@ -149,8 +149,8 @@ wrap.insertAdjacentHTML('beforeend', `
 
 <!-- SECTION: STATE TAX BREAKDOWN -->
 <div id="section-state-tax" class="content-section">
-<div class="mb-6"><h1 class="text-2xl font-extrabold text-slate-900">State Tax Breakdown</h1>
-<p class="text-slate-500 text-sm mt-1">Estimated state income tax layered on the federal picture — and what a move would change</p></div>
+<div class="mb-6 flex items-start justify-between gap-4"><div><h1 class="text-2xl font-extrabold text-slate-900">State Tax Breakdown</h1>
+<p class="text-slate-500 text-sm mt-1">Estimated state income tax layered on the federal picture — and what a move would change</p></div><button onclick="calcStateSection()" class="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Recalculate</button></div>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 <div class="card lg:col-span-1">
 <h3 class="font-bold text-slate-800 mb-4">Inputs</h3>

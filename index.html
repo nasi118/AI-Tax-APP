@@ -161,8 +161,8 @@ body{background:#fff}
 </div>
 <nav class="flex-1 px-2 pt-1 pb-2">
 <div class="nav-group" data-group="client"><button class="nav-group-label" onclick="toggleNavGroup(this)">Client<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></button><div class="nav-group-items"><button class="nav-btn active" id="nav-dashboard" onclick="showSection('dashboard')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</button><button class="nav-btn" id="nav-client-profile" onclick="showSection('client-profile')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>Client Profile</button><button class="nav-btn" id="nav-clients" onclick="showSection('clients')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Clients</button><button class="nav-btn" id="nav-scenarios" onclick="showSection('scenarios')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>Demo Scenarios</button></div></div>
-<div class="nav-group" data-group="calc"><button class="nav-group-label" onclick="toggleNavGroup(this)">Calculators<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></button><div class="nav-group-items"><button class="nav-btn" id="nav-schedule-c" onclick="showSection('schedule-c')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>Schedule C Analysis</button><button class="nav-btn" id="nav-schedule-a" onclick="showSection('schedule-a')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h4m-7 5h10a2 2 0 002-2V7a2 2 0 00-2-2h-2.5a2 2 0 01-1.664-.89l-.5-.75A2 2 0 0011.337 2H9a2 2 0 00-2 2v13a2 2 0 002 2z"/></svg>Schedule A — Itemized</button><button class="nav-btn" id="nav-real-estate" onclick="showSection('real-estate')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Real Estate & Rental</button><button class="nav-btn" id="nav-home-office" onclick="showSection('home-office')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 00-1-1h-2a1 1 0 00-1 1v5m4 0H9"/></svg>Home Office</button><button class="nav-btn" id="nav-vehicle" onclick="showSection('vehicle')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 6H5l-2 6v4h1m15-10l2 6v4h-1m-5-10H13m0 0l-1 6m6-6l1 6m-7-6h-1"/></svg>Vehicle Expenses</button><button class="nav-btn" id="nav-entity-strategy" onclick="showSection('entity-strategy')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16M3 7h18M9 7V3M15 7V3"/></svg>Entity & S-Corp</button></div></div>
-<div class="nav-group" data-group="plan"><button class="nav-group-label" onclick="toggleNavGroup(this)">Planning<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></button><div class="nav-group-items"><button class="nav-btn" id="nav-whatif" onclick="showSection('whatif')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>What-If Planner</button><button class="nav-btn" id="nav-retirement" onclick="showSection('retirement')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Retirement</button><button class="nav-btn" id="nav-quarterly" onclick="showSection('quarterly')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>Quarterly Payments</button><button class="nav-btn" id="nav-deadlines" onclick="showSection('deadlines')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Deadline Calendar</button><button class="nav-btn" id="nav-year-end" onclick="showSection('year-end')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Year-End Planning</button><button class="nav-btn" id="nav-state-tax" onclick="showSection('state-tax')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>State Tax Breakdown</button><button class="nav-btn" id="nav-tax-comparison" onclick="showSection('tax-comparison')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Tax Year Comparison</button></div></div>
+<div class="nav-group" data-group="calc"><button class="nav-group-label" onclick="toggleNavGroup(this)">Calculators<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></button><div class="nav-group-items"><button class="nav-btn" id="nav-schedule-1" onclick="showSection('schedule-1')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Schedule 1</button><button class="nav-btn" id="nav-schedule-a" onclick="showSection('schedule-a')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h4m-7 5h10a2 2 0 002-2V7a2 2 0 00-2-2h-2.5a2 2 0 01-1.664-.89l-.5-.75A2 2 0 0011.337 2H9a2 2 0 00-2 2v13a2 2 0 002 2z"/></svg>Schedule A — Itemized</button><button class="nav-btn" id="nav-schedule-c" onclick="showSection('schedule-c')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>Schedule C Analysis</button><button class="nav-btn" id="nav-investment-income" onclick="showSection('investment-income')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Investment Income</button></div></div>
+<div class="nav-group" data-group="plan"><button class="nav-group-label" onclick="toggleNavGroup(this)">Planning<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></button><div class="nav-group-items"><button class="nav-btn" id="nav-whatif" onclick="showSection('whatif')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>What-If Planner</button><button class="nav-btn" id="nav-retirement" onclick="showSection('retirement')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Retirement</button><button class="nav-btn" id="nav-quarterly" onclick="showSection('quarterly')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>Quarterly Payments</button><button class="nav-btn" id="nav-deadlines" onclick="showSection('deadlines')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Deadline Calendar</button><button class="nav-btn" id="nav-year-end" onclick="showSection('year-end')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Year-End Planning</button><button class="nav-btn" id="nav-state-tax" onclick="showSection('state-tax')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>State Tax Breakdown</button><button class="nav-btn" id="nav-tax-comparison" onclick="showSection('tax-comparison')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Tax Year Comparison</button><button class="nav-btn" id="nav-home-office" onclick="showSection('home-office')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 00-1-1h-2a1 1 0 00-1 1v5m4 0H9"/></svg>Home Office</button><button class="nav-btn" id="nav-vehicle" onclick="showSection('vehicle')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 6H5l-2 6v4h1m15-10l2 6v4h-1m-5-10H13m0 0l-1 6m6-6l1 6m-7-6h-1"/></svg>Vehicle Expenses</button><button class="nav-btn" id="nav-entity-strategy" onclick="showSection('entity-strategy')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16M3 7h18M9 7V3M15 7V3"/></svg>Entity & S-Corp</button></div></div>
 <div class="nav-group" data-group="trust"><button class="nav-group-label" onclick="toggleNavGroup(this)">Trusts &amp; Estates<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></button><div class="nav-group-items"><button class="nav-btn" id="nav-trust-center" onclick="showSection('trust-center')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>Trust Classification</button><button class="nav-btn" id="nav-form-1041" onclick="showSection('form-1041')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Form 1041 Workbench</button><button class="nav-btn" id="nav-review-1041" onclick="showSection('review-1041')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>1041 Review Checklist</button><button class="nav-btn" id="nav-gst" onclick="showSection('gst')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>GST Planner</button><button class="nav-btn" id="nav-trust-estate" onclick="showSection('trust-estate')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>Trust & Estate</button><button class="nav-btn" id="nav-trust-ref" onclick="showSection('trust-ref')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>Fiduciary Reference</button></div></div>
 <div class="nav-group closed" data-group="ref"><button class="nav-group-label" onclick="toggleNavGroup(this)">Reference<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></button><div class="nav-group-items"><button class="nav-btn" id="nav-obbba" onclick="showSection('obbba')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>OBBBA 2025</button><button class="nav-btn" id="nav-creative" onclick="showSection('creative')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>Creative Strategies</button><button class="nav-btn" id="nav-planning-guide" onclick="showSection('planning-guide')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>Tax Planning Guide</button></div></div>
 <div class="nav-group closed" data-group="practice"><button class="nav-group-label" onclick="toggleNavGroup(this)">Practice<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg></button><div class="nav-group-items"><button class="nav-btn" id="nav-documents" onclick="showSection('documents')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>Document Checklist</button><button class="nav-btn" id="nav-client-report" onclick="showSection('client-report')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Client Report</button><button class="nav-btn" id="nav-advisory" onclick="showSection('advisory')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>Advisory Services</button><button class="nav-btn" id="nav-ai-strategist" onclick="showSection('ai-strategist')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>AI Tax Strategist</button></div></div>
@@ -433,9 +433,12 @@ body{background:#fff}
      SECTION: SCHEDULE C ANALYSIS
      ============================================================ -->
 <div id="section-schedule-c" class="content-section">
-  <div class="mb-6">
-    <h1 class="text-2xl font-extrabold text-slate-900">Schedule C Analysis</h1>
-    <p class="text-slate-500 text-sm mt-1">Self-employment income, deductible expenses, SE tax &amp; QBI deduction calculator</p>
+  <div class="mb-6 flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-900">Schedule C Analysis</h1>
+      <p class="text-slate-500 text-sm mt-1">Self-employment income, deductible expenses, SE tax &amp; QBI deduction calculator</p>
+    </div>
+    <button onclick="calcScheduleC()" class="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Recalculate</button>
   </div>
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Inputs -->
@@ -520,6 +523,14 @@ body{background:#fff}
             <label class="form-label mb-0">Other Expenses</label>
             <input class="form-input w-28 text-right" id="sc-other" type="number" value="200" oninput="calcScheduleC()">
           </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="font-bold text-slate-800 mb-4">Above-the-Line Items <span class="badge">Flows to Schedule 1</span></h3>
+        <div>
+          <label class="form-label">Self-Employed Health Insurance Premiums</label>
+          <input class="form-input" id="sc-se-health-ins" type="number" value="9600" oninput="calcScheduleC()">
+          <div class="text-xs text-slate-400 mt-1">Not a Schedule C expense — deducted on Schedule 1, limited to net Schedule C profit</div>
         </div>
       </div>
     </div>
@@ -622,12 +633,108 @@ body{background:#fff}
 </div>
 
 <!-- ============================================================
+     SECTION: SCHEDULE 1 — ADDITIONAL INCOME & ADJUSTMENTS
+     ============================================================ -->
+<div id="section-schedule-1" class="content-section">
+  <div class="mb-6 flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-900">Schedule 1 — Additional Income &amp; Adjustments</h1>
+      <p class="text-slate-500 text-sm mt-1">Above-the-line adjustments to income — HSA, retirement, self-employed health insurance, and ½ SE tax, linked live to Retirement and Schedule C</p>
+    </div>
+    <button onclick="calcSchedule1()" class="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Recalculate</button>
+  </div>
+
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+    <div class="kpi" style="border-left-color:#1e3a8a;">
+      <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Total Additional Income</div>
+      <div class="kpi-value text-slate-900" id="s1-kpi-income">$0</div>
+    </div>
+    <div class="kpi" style="border-left-color:#b91c1c;">
+      <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Total Adjustments</div>
+      <div class="kpi-value" style="color:#b91c1c;" id="s1-kpi-adjustments">$0</div>
+    </div>
+    <div class="kpi" style="border-left-color:#1d4ed8;">
+      <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Adjusted Gross Income</div>
+      <div class="kpi-value" style="color:#1e40af;" id="s1-kpi-agi">$0</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-1 space-y-4">
+      <div class="card">
+        <h3 class="font-bold text-slate-800 mb-4">Part I — Additional Income</h3>
+        <div>
+          <label class="form-label">Other Income</label>
+          <input class="form-input" id="s1-other-income" type="number" value="0" oninput="calcSchedule1()">
+          <div class="text-xs text-slate-400 mt-1">Unemployment comp, prizes, jury duty pay, etc.</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="font-bold text-slate-800 mb-4">Part II — Adjustments to Income</h3>
+        <div class="space-y-3">
+          <div>
+            <label class="form-label">HSA Deduction</label>
+            <input class="form-input" id="s1-hsa" type="number" value="4300" oninput="calcSchedule1()">
+            <div class="text-xs text-slate-400 mt-1">2026 limit: $4,300 self-only / $8,550 family (+$1,000 catch-up 55+)</div>
+          </div>
+          <div>
+            <label class="form-label">Other Deductions</label>
+            <input class="form-input" id="s1-other-deductions" type="number" value="0" oninput="calcSchedule1()">
+            <div class="text-xs text-slate-400 mt-1">Educator expenses, alimony paid, penalty on early savings withdrawal, etc.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="font-bold text-slate-800 mb-2">Linked From Other Tabs</h3>
+        <p class="text-xs text-slate-500">These lines aren't editable here — they follow the Retirement, Schedule C, and Investment Income tabs automatically so Schedule 1 never drifts out of sync.</p>
+      </div>
+    </div>
+    <div class="lg:col-span-2 space-y-4">
+      <div class="card">
+        <h3 class="font-bold text-slate-800 mb-4">Schedule 1 Computation</h3>
+        <table class="ttable">
+          <thead><tr><th>Line Item</th><th class="text-right">Amount</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr><td colspan="3" class="font-bold text-slate-500 bg-slate-50">Part I — Additional Income</td></tr>
+            <tr><td>Business Income (Schedule C net profit)</td><td class="text-right" id="s1-r-business">$0</td><td class="text-xs text-slate-400">Schedule C tab</td></tr>
+            <tr><td>Investment &amp; Rental Income</td><td class="text-right" id="s1-r-investment">$0</td><td class="text-xs text-slate-400">Investment Income tab</td></tr>
+            <tr><td>Other Income</td><td class="text-right" id="s1-r-other-income">$0</td><td class="text-xs text-slate-400">Editable</td></tr>
+            <tr class="hl"><td>Total Additional Income</td><td class="text-right font-bold" id="s1-r-total-income">$0</td><td></td></tr>
+            <tr><td colspan="3" class="font-bold text-slate-500 bg-slate-50">Part II — Adjustments to Income</td></tr>
+            <tr><td>HSA Deduction</td><td class="text-right text-red-600" id="s1-r-hsa">($0)</td><td class="text-xs text-slate-400">Editable</td></tr>
+            <tr><td>Retirement Plan Contribution</td><td class="text-right text-red-600" id="s1-r-retirement">($0)</td><td class="text-xs text-slate-400">Retirement tab (Solo 401(k) recommendation)</td></tr>
+            <tr><td>Self-Employed Health Insurance</td><td class="text-right text-red-600" id="s1-r-se-health">($0)</td><td class="text-xs text-slate-400">Schedule C tab</td></tr>
+            <tr><td>Deductible Part of Self-Employment Tax</td><td class="text-right text-red-600" id="s1-r-half-se">($0)</td><td class="text-xs text-slate-400">Schedule C tab</td></tr>
+            <tr><td>Other Deductions</td><td class="text-right text-red-600" id="s1-r-other-deduct">($0)</td><td class="text-xs text-slate-400">Editable</td></tr>
+            <tr class="hl"><td>Total Adjustments</td><td class="text-right font-bold" id="s1-r-total-adjustments">$0</td><td></td></tr>
+            <tr class="total"><td>Adjusted Gross Income (Schedule 1 basis)</td><td class="text-right" id="s1-r-agi">$0</td><td></td></tr>
+          </tbody>
+        </table>
+        <div class="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-800">
+          <strong>Note:</strong> This AGI reflects only the income and adjustments modeled on this tab (Schedule C + Investment Income + the items above) — it will differ from the Client Profile summary if that page's rental/investment inputs haven't been reconciled with the Investment Income tab yet.
+        </div>
+      </div>
+      <div class="card">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="badge bg-slate-200 text-slate-700">§ IRC</span>
+          <h3 class="font-bold text-slate-800">Primary Authority</h3>
+        </div>
+        <div class="text-xs text-slate-600">IRC §62 (adjustments to income) | §223 (HSA) | §164(f) (deductible part of SE tax) | §162(l) (self-employed health insurance, limited to net SE earnings) | IRS Schedule 1 (Form 1040) instructions</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
      SECTION: SCHEDULE A — ITEMIZED DEDUCTIONS
      ============================================================ -->
 <div id="section-schedule-a" class="content-section">
-  <div class="mb-6">
-    <h1 class="text-2xl font-extrabold text-slate-900">Schedule A — Itemized Deductions</h1>
-    <p class="text-slate-500 text-sm mt-1">Medical, SALT, interest &amp; charitable deductions under 2026 OBBBA rules — with income-based phase-outs, itemize-vs-standard comparison, and carryover tracking</p>
+  <div class="mb-6 flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-900">Schedule A — Itemized Deductions</h1>
+      <p class="text-slate-500 text-sm mt-1">Medical, SALT, interest &amp; charitable deductions under 2026 OBBBA rules — with income-based phase-outs, itemize-vs-standard comparison, and carryover tracking</p>
+    </div>
+    <button onclick="calcScheduleA()" class="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Recalculate</button>
   </div>
 
   <!-- KPI Row -->
@@ -871,9 +978,68 @@ body{background:#fff}
 <!-- ============================================================
      SECTION: REAL ESTATE & RENTAL
      ============================================================ -->
-<div id="section-real-estate" class="content-section">
-  <div class="mb-6">
-    <h1 class="text-2xl font-extrabold text-slate-900">Real Estate &amp; Rental Income</h1>
+<div id="section-investment-income" class="content-section">
+  <div class="mb-6 flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-900">Investment Income &amp; Gains (Losses)</h1>
+      <p class="text-slate-500 text-sm mt-1">Interest, dividends, capital gains/losses, and Schedule E rental income — with preferential vs. ordinary rate breakdown</p>
+    </div>
+    <button onclick="calcInvestmentIncome()" class="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Recalculate</button>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="lg:col-span-1 space-y-4">
+      <div class="card">
+        <h3 class="font-bold text-slate-800 mb-4">Interest &amp; Dividends</h3>
+        <div class="space-y-3">
+          <div><label class="form-label">Taxable Interest</label><input class="form-input" id="inv-interest" type="number" value="16000" oninput="calcInvestmentIncome()"></div>
+          <div><label class="form-label">Tax-Exempt Interest (muni bonds)</label><input class="form-input" id="inv-interest-exempt" type="number" value="0" oninput="calcInvestmentIncome()"><div class="text-xs text-slate-400 mt-1">Informational — excluded from taxable income</div></div>
+          <div><label class="form-label">Ordinary Dividends</label><input class="form-input" id="inv-div-ordinary" type="number" value="6500" oninput="calcInvestmentIncome()"></div>
+          <div><label class="form-label">— of which, Qualified Dividends</label><input class="form-input" id="inv-div-qualified" type="number" value="5200" oninput="calcInvestmentIncome()"><div class="text-xs text-slate-400 mt-1">Subset of ordinary dividends above; taxed at LTCG rates</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="font-bold text-slate-800 mb-4">Capital Gains &amp; Losses</h3>
+        <div class="space-y-3">
+          <div><label class="form-label">Short-Term Capital Gains (Losses)</label><input class="form-input" id="inv-st-gains" type="number" value="0" oninput="calcInvestmentIncome()"><div class="text-xs text-slate-400 mt-1">Held ≤ 1 year — taxed as ordinary income</div></div>
+          <div><label class="form-label">Long-Term Capital Gains (Losses)</label><input class="form-input" id="inv-lt-gains" type="number" value="21200" oninput="calcInvestmentIncome()"><div class="text-xs text-slate-400 mt-1">Held &gt; 1 year — taxed at 0/15/20% preferential rates</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="lg:col-span-2 space-y-4">
+      <div class="card">
+        <h3 class="font-bold text-slate-800 mb-4">Investment Income Summary</h3>
+        <table class="ttable">
+          <thead><tr><th>Item</th><th class="text-right">Amount</th><th>Rate Character</th></tr></thead>
+          <tbody>
+            <tr><td>Taxable Interest</td><td class="text-right" id="inv-r-interest">$16,000</td><td><span class="badge">Ordinary</span></td></tr>
+            <tr><td>Ordinary (Non-Qualified) Dividends</td><td class="text-right" id="inv-r-div-nonqual">$1,300</td><td><span class="badge">Ordinary</span></td></tr>
+            <tr><td>Qualified Dividends</td><td class="text-right" id="inv-r-div-qual">$5,200</td><td><span class="badge bg-emerald-100 text-emerald-700">Preferential</span></td></tr>
+            <tr><td>Short-Term Capital Gains (Losses)</td><td class="text-right" id="inv-r-st">$0</td><td><span class="badge">Ordinary</span></td></tr>
+            <tr><td>Long-Term Capital Gains (Losses)</td><td class="text-right" id="inv-r-lt">$21,200</td><td><span class="badge bg-emerald-100 text-emerald-700">Preferential</span></td></tr>
+            <tr><td>Schedule E — Net Rental Income (Loss)</td><td class="text-right" id="inv-r-rental">($4,509)</td><td><span class="badge">Ordinary</span></td></tr>
+            <tr class="total"><td>Total Investment &amp; Rental Income</td><td class="text-right" id="inv-r-total">$39,991</td><td></td></tr>
+          </tbody>
+        </table>
+        <div class="grid grid-cols-2 gap-4 mt-4">
+          <div class="p-3 bg-slate-50 rounded-lg text-center">
+            <div class="text-xs font-semibold text-slate-500 uppercase">Taxed as Ordinary Income</div>
+            <div class="text-xl font-extrabold text-slate-800 mt-1" id="inv-kpi-ordinary">$12,791</div>
+          </div>
+          <div class="p-3 bg-emerald-50 rounded-lg text-center">
+            <div class="text-xs font-semibold text-emerald-600 uppercase">Taxed at Preferential Rates</div>
+            <div class="text-xl font-extrabold text-emerald-700 mt-1" id="inv-kpi-preferential">$26,400</div>
+          </div>
+        </div>
+        <div class="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-800">
+          <strong>Planning note:</strong> Qualified dividends and long-term gains are taxed at 0/15/20% rather than ordinary brackets up to 37% — shifting a client toward buy-and-hold, tax-exempt munis, or qualified-dividend-paying funds can meaningfully lower the blended rate on investment income.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-4">
+    <h2 class="text-lg font-bold text-slate-800">Schedule E — Real Estate &amp; Rental</h2>
     <p class="text-slate-500 text-sm mt-1">Rental analysis, depreciation, passive activity rules, OBBBA bonus depreciation, and investor vs. dealer classification</p>
   </div>
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -990,9 +1156,12 @@ body{background:#fff}
      SECTION: HOME OFFICE
      ============================================================ -->
 <div id="section-home-office" class="content-section">
-  <div class="mb-6">
-    <h1 class="text-2xl font-extrabold text-slate-900">Home Office Deduction</h1>
-    <p class="text-slate-500 text-sm mt-1">Form 8829 — Simplified vs. Regular Method comparison (IRC §280A)</p>
+  <div class="mb-6 flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-900">Home Office Deduction</h1>
+      <p class="text-slate-500 text-sm mt-1">Form 8829 — Simplified vs. Regular Method comparison (IRC §280A)</p>
+    </div>
+    <button onclick="calcHomeOffice()" class="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Recalculate</button>
   </div>
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- Inputs -->
@@ -1095,9 +1264,12 @@ body{background:#fff}
      SECTION: VEHICLE EXPENSES
      ============================================================ -->
 <div id="section-vehicle" class="content-section">
-  <div class="mb-6">
-    <h1 class="text-2xl font-extrabold text-slate-900">Vehicle &amp; Transportation Expenses</h1>
-    <p class="text-slate-500 text-sm mt-1">Standard mileage vs. actual expense method — IRC §179, listed property rules</p>
+  <div class="mb-6 flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-900">Vehicle &amp; Transportation Expenses</h1>
+      <p class="text-slate-500 text-sm mt-1">Standard mileage vs. actual expense method — IRC §179, listed property rules</p>
+    </div>
+    <button onclick="calcVehicle()" class="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Recalculate</button>
   </div>
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <div class="space-y-4">
@@ -1179,9 +1351,12 @@ body{background:#fff}
      SECTION: ENTITY & S-CORP STRATEGY
      ============================================================ -->
 <div id="section-entity-strategy" class="content-section">
-  <div class="mb-5">
-    <h1 class="text-2xl font-extrabold text-slate-900">Entity &amp; S-Corp Strategy</h1>
-    <p class="text-slate-500 text-sm mt-1">S-Corporation election analysis — reasonable compensation, FICA arbitrage, formation roadmap</p>
+  <div class="mb-5 flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-900">Entity &amp; S-Corp Strategy</h1>
+      <p class="text-slate-500 text-sm mt-1">S-Corporation election analysis — reasonable compensation, FICA arbitrage, formation roadmap</p>
+    </div>
+    <button onclick="calcScorp()" class="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Recalculate</button>
   </div>
 
   <!-- Tab bar -->
@@ -1440,9 +1615,12 @@ body{background:#fff}
      SECTION: RETIREMENT PLANNING
      ============================================================ -->
 <div id="section-retirement" class="content-section">
-  <div class="mb-6">
-    <h1 class="text-2xl font-extrabold text-slate-900">Retirement Planning</h1>
-    <p class="text-slate-500 text-sm mt-1">2026 contribution limits — Solo 401(k) vs SEP-IRA vs Traditional/Roth IRA — Roth conversion strategy</p>
+  <div class="mb-6 flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-900">Retirement Planning</h1>
+      <p class="text-slate-500 text-sm mt-1">2026 contribution limits — Solo 401(k) vs SEP-IRA vs Traditional/Roth IRA — Roth conversion strategy</p>
+    </div>
+    <button onclick="calcRetirement()" class="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Recalculate</button>
   </div>
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-1 space-y-4">
@@ -2862,9 +3040,10 @@ const sectionTitles = {
   'dashboard': 'Dashboard',
   'client-profile': 'Client Profile',
   'scenarios': 'Demo Scenarios',
-  'schedule-c': 'Schedule C Analysis',
+  'schedule-1': 'Schedule 1 — Additional Income & Adjustments',
   'schedule-a': 'Schedule A — Itemized Deductions',
-  'real-estate': 'Real Estate & Rental',
+  'schedule-c': 'Schedule C Analysis',
+  'investment-income': 'Investment Income & Gains (Losses)',
   'home-office': 'Home Office',
   'vehicle': 'Vehicle Expenses',
   'entity-strategy': 'Entity & S-Corp Strategy',
@@ -2930,6 +3109,8 @@ function calcScheduleC() {
   const medicareTax = seBase * 0.029;
   const seTax = ssTax + medicareTax;
   const seDeduction = seTax / 2;
+  const seHealthInsRaw = +document.getElementById('sc-se-health-ins').value || 0;
+  const seHealthIns = Math.max(0, Math.min(seHealthInsRaw, Math.max(0, netProfit - seDeduction)));
   const agi = netProfit - seDeduction;
   const qbi = Math.max(0, netProfit * 0.20);
   const stdDeduction = 15000;
@@ -2953,6 +3134,10 @@ function calcScheduleC() {
   document.getElementById('sc-kpi-profit').textContent = fmt(netProfit);
   document.getElementById('sc-kpi-setax').textContent = fmt(seTax);
   document.getElementById('sc-kpi-qbi').textContent = fmt(qbi);
+
+  // shared with Schedule 1 so its adjustments stay in sync with Schedule C
+  window.SC_RESULTS = { netProfit, seTax, seDeduction, seHealthIns, qbi };
+  if (typeof calcSchedule1 === 'function') calcSchedule1();
 }
 
 function calcFederalTax(taxableIncome, status) {
@@ -2979,6 +3164,48 @@ function calcFederalTax(taxableIncome, status) {
     tax += (Math.min(taxableIncome, hi) - lo) * rate;
   }
   return tax;
+}
+
+// ================================================================
+// SCHEDULE 1 CALCULATIONS — additional income & adjustments
+// ================================================================
+function calcSchedule1() {
+  const val = id => +document.getElementById(id).value || 0;
+  const fmt = n => '$' + Math.round(n).toLocaleString();
+  const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+
+  const sc = window.SC_RESULTS || { netProfit: 0, seDeduction: 0, seHealthIns: 0 };
+  const ret = window.RET_RESULTS || { soloDeduct: 0 };
+  const inv = window.INV_RESULTS || { total: 0 };
+
+  const otherIncome = val('s1-other-income');
+  const totalIncome = sc.netProfit + inv.total + otherIncome;
+
+  const hsa = val('s1-hsa');
+  const halfSeTax = sc.seDeduction;
+  const seHealthIns = sc.seHealthIns;
+  const retirement = ret.soloDeduct;
+  const otherDeductions = val('s1-other-deductions');
+  const totalAdjustments = hsa + halfSeTax + seHealthIns + retirement + otherDeductions;
+
+  const agi = totalIncome - totalAdjustments;
+
+  setTxt('s1-r-business', fmt(sc.netProfit));
+  setTxt('s1-r-investment', fmt(inv.total));
+  setTxt('s1-r-other-income', fmt(otherIncome));
+  setTxt('s1-r-total-income', fmt(totalIncome));
+  setTxt('s1-r-hsa', hsa > 0 ? '(' + fmt(hsa) + ')' : '$0');
+  setTxt('s1-r-retirement', retirement > 0 ? '(' + fmt(retirement) + ')' : '$0');
+  setTxt('s1-r-se-health', seHealthIns > 0 ? '(' + fmt(seHealthIns) + ')' : '$0');
+  setTxt('s1-r-half-se', halfSeTax > 0 ? '(' + fmt(halfSeTax) + ')' : '$0');
+  setTxt('s1-r-other-deduct', otherDeductions > 0 ? '(' + fmt(otherDeductions) + ')' : '$0');
+  setTxt('s1-r-total-adjustments', fmt(totalAdjustments));
+  setTxt('s1-r-agi', fmt(agi));
+  setTxt('s1-kpi-income', fmt(totalIncome));
+  setTxt('s1-kpi-adjustments', fmt(totalAdjustments));
+  setTxt('s1-kpi-agi', fmt(agi));
+
+  window.SCHEDULE1_RESULTS = { totalIncome, totalAdjustments, agi, otherIncome, otherDeductions, hsa, halfSeTax, seHealthIns, retirement };
 }
 
 // ================================================================
@@ -3154,6 +3381,46 @@ function calcRealEstate() {
   document.getElementById('re-r-depr').textContent = '(' + fmt(annualDepr) + ')';
   document.getElementById('re-r-net').textContent = (netIncome < 0 ? '(' : '') + '$' + Math.round(Math.abs(netIncome)).toLocaleString() + (netIncome < 0 ? ')' : '');
   document.getElementById('re-r-net').className = 'text-right font-bold ' + (netIncome < 0 ? 'text-red-600' : 'text-emerald-600');
+
+  // shared with the Investment Income tab's summary
+  window.RE_NET_INCOME = netIncome;
+  if (typeof calcInvestmentIncome === 'function') calcInvestmentIncome();
+}
+
+// ================================================================
+// INVESTMENT INCOME & GAINS (LOSSES) CALCULATIONS
+// ================================================================
+function calcInvestmentIncome() {
+  const val = id => +document.getElementById(id).value || 0;
+  const fmt = n => '$' + Math.round(n).toLocaleString();
+  const fmtSigned = n => (n < 0 ? '(' : '') + '$' + Math.round(Math.abs(n)).toLocaleString() + (n < 0 ? ')' : '');
+
+  const interest = val('inv-interest');
+  const interestExempt = val('inv-interest-exempt');
+  const divOrdinary = val('inv-div-ordinary');
+  const divQualified = Math.min(val('inv-div-qualified'), divOrdinary);
+  const divNonQualified = Math.max(0, divOrdinary - divQualified);
+  const stGains = val('inv-st-gains');
+  const ltGains = val('inv-lt-gains');
+  const rentalNet = window.RE_NET_INCOME || 0;
+
+  const ordinaryTotal = interest + divNonQualified + stGains + rentalNet;
+  const preferentialTotal = divQualified + ltGains;
+  const total = interest + divOrdinary + stGains + ltGains + rentalNet;
+
+  document.getElementById('inv-r-interest').textContent = fmt(interest);
+  document.getElementById('inv-r-div-nonqual').textContent = fmt(divNonQualified);
+  document.getElementById('inv-r-div-qual').textContent = fmt(divQualified);
+  document.getElementById('inv-r-st').textContent = fmtSigned(stGains);
+  document.getElementById('inv-r-lt').textContent = fmtSigned(ltGains);
+  document.getElementById('inv-r-rental').textContent = fmtSigned(rentalNet);
+  document.getElementById('inv-r-total').textContent = fmtSigned(total);
+  document.getElementById('inv-kpi-ordinary').textContent = fmt(ordinaryTotal);
+  document.getElementById('inv-kpi-preferential').textContent = fmt(preferentialTotal);
+
+  // shared with Schedule 1
+  window.INV_RESULTS = { interest, interestExempt, divOrdinary, divQualified, divNonQualified, stGains, ltGains, rentalNet, ordinaryTotal, preferentialTotal, total };
+  if (typeof calcSchedule1 === 'function') calcSchedule1();
 }
 
 function calcWinthrop() {
@@ -3507,6 +3774,8 @@ function loadScenario(n) {
   try { calcScorp(); } catch (e) {}
   try { calcRetirement(); } catch (e) {}
   try { if (typeof calcScheduleA === 'function') calcScheduleA(); } catch (e) {}
+  try { if (typeof calcInvestmentIncome === 'function') calcInvestmentIncome(); } catch (e) {}
+  try { if (typeof calcSchedule1 === 'function') calcSchedule1(); } catch (e) {}
 
   // Show a brief toast
   showToast('Loaded: ' + s.label);
@@ -3590,6 +3859,10 @@ function calcRetirement() {
     recText = 'At similar future rates, consider diversifying between Roth and Traditional contributions to hedge against rate uncertainty. A mix of taxable/tax-deferred/tax-free accounts provides maximum flexibility.';
   }
   recEl.querySelector('span').textContent = recText;
+
+  // shared with Schedule 1 so its retirement adjustment stays in sync with this tab's recommendation
+  window.RET_RESULTS = { soloDeduct: soloMax };
+  if (typeof calcSchedule1 === 'function') calcSchedule1();
 
   updateRetirementChart(iraMax, sepMax, soloMax);
 }
@@ -3821,16 +4094,18 @@ function clearChat() {
 // INIT
 // ================================================================
 document.addEventListener('DOMContentLoaded', () => {
-  initDashboardCharts();
-  calcScheduleC();
-  calcScheduleA();
-  calcRealEstate();
-  calcHomeOffice();
-  calcVehicle();
-  calcScorp();
-  calcRetirement();
-  calcEstTax();
-  calcEstate();
+  try { initDashboardCharts(); } catch (e) {}
+  try { calcScheduleC(); } catch (e) {}
+  try { calcScheduleA(); } catch (e) {}
+  try { calcRealEstate(); } catch (e) {}
+  try { calcInvestmentIncome(); } catch (e) {}
+  try { calcSchedule1(); } catch (e) {}
+  try { calcHomeOffice(); } catch (e) {}
+  try { calcVehicle(); } catch (e) {}
+  try { calcScorp(); } catch (e) {}
+  try { calcRetirement(); } catch (e) {}
+  try { calcEstTax(); } catch (e) {}
+  try { calcEstate(); } catch (e) {}
 });
 </script>
 <script src="js/sections.js"></script>

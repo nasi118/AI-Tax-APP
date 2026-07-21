@@ -4346,6 +4346,7 @@ document.addEventListener('DOMContentLoaded', () => {
   try { calcEstTax(); } catch (e) {}
   try { calcEstate(); } catch (e) {}
   try { calcTaxComparison(); } catch (e) {}
+  try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (e) {}
 });
 </script>
 <script src="js/sections.js"></script>

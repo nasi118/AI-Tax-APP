@@ -256,6 +256,50 @@ function renderDashWidgets(){
 <div class="card"><div class="flex items-center justify-between mb-3"><h3 class="text-sm font-semibold text-slate-700">Quarterly Payments — 2026</h3><button onclick="showSection('quarterly')" class="text-xs font-semibold text-blue-700 hover:underline" style="background:none;border:none;cursor:pointer;font-family:inherit;">Manage →</button></div>
 <div class="flex items-center gap-3 mb-2"><div class="progress-track flex-1"><div class="progress-fill" style="width:${target?Math.min(100,paid/target*100):0}%;"></div></div><span class="text-xs font-semibold text-slate-600">${fmt$(paid)} / ${fmt$(target)}</span></div>
 <div class="grid grid-cols-4 gap-2 mt-3">${QUARTERS.map((qq,i) => `<div class="p-2 rounded-lg text-center ${q.paid[i]?'bg-emerald-50':'bg-slate-50'}"><div class="text-xs font-semibold ${q.paid[i]?'text-emerald-700':'text-slate-500'}">${qq.q}</div><div class="text-xs font-bold ${q.paid[i]?'text-emerald-700':'text-slate-700'}" style="font-variant-numeric:tabular-nums;">${q.paid[i]?'Paid':fmt$(q.amounts[i])}</div></div>`).join('')}</div></div>`;
+  renderPlanningSnapshot();
+}
+
+function renderPlanningSnapshot(){
+  let host = document.getElementById('dash-planning-snapshot');
+  if(!host){
+    const widgets = document.getElementById('dash-widgets');
+    if(!widgets) return;
+    widgets.insertAdjacentHTML('afterend', '<div id="dash-planning-snapshot"></div>');
+    host = document.getElementById('dash-planning-snapshot');
+  }
+  const tc = window.TC_BASE || null;
+  const sa = window.SA_RESULTS || null;
+  const sc = window.SC_RESULTS || null;
+  const re = window.RE_RESULTS || null;
+  if(!tc){ host.innerHTML = ''; return; }
+
+  const marginalBracket = (ti, filing) => {
+    const brk = filing === 'mfj'
+      ? [[0,.10],[23850,.12],[96950,.22],[206700,.24],[394600,.32],[501050,.35],[751600,.37]]
+      : [[0,.10],[11925,.12],[48475,.22],[103350,.24],[197300,.32],[250525,.35],[626350,.37]];
+    let rate = brk[0][1];
+    for(const [thresh,r] of brk){ if(ti >= thresh) rate = r; }
+    return rate;
+  };
+  const marginal = marginalBracket(tc.taxableIncome, tc.filing);
+  const effRate = tc.agi > 0 ? (tc.totalTax / tc.agi * 100) : 0;
+  const deductionNote = sa ? (sa.shouldItemize ? `Itemizing beats standard by ${fmt$(sa.totalItemized - sa.stdDeduction)}` : `Standard deduction used`) : '';
+  const suspendedLoss = re && re.suspendedLoss > 0 ? re.suspendedLoss : 0;
+
+  host.innerHTML = `
+<div class="card mb-5">
+  <div class="flex items-center justify-between mb-3"><h3 class="text-sm font-semibold text-slate-700">Planning Snapshot — Base Scenario</h3><button onclick="showSection('tax-comparison')" class="text-xs font-semibold text-blue-700 hover:underline" style="background:none;border:none;cursor:pointer;font-family:inherit;">Open Tax Year Comparison →</button></div>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div class="p-3 bg-slate-50 rounded-lg"><div class="text-xs text-slate-500 mb-1">Adjusted Gross Income</div><div class="font-bold text-slate-800">${fmt$(tc.agi)}</div></div>
+    <div class="p-3 bg-slate-50 rounded-lg"><div class="text-xs text-slate-500 mb-1">Taxable Income</div><div class="font-bold text-slate-800">${fmt$(tc.taxableIncome)}</div></div>
+    <div class="p-3 bg-slate-50 rounded-lg"><div class="text-xs text-slate-500 mb-1">Marginal Bracket</div><div class="font-bold text-slate-800">${(marginal*100).toFixed(0)}%</div></div>
+    <div class="p-3 bg-slate-50 rounded-lg"><div class="text-xs text-slate-500 mb-1">Effective Rate (of AGI)</div><div class="font-bold text-slate-800">${effRate.toFixed(1)}%</div></div>
+    <div class="p-3 bg-slate-50 rounded-lg"><div class="text-xs text-slate-500 mb-1">Deduction Used</div><div class="font-bold text-slate-800">${fmt$(tc.deduction)}</div><div class="text-xs text-slate-400 mt-0.5">${deductionNote}</div></div>
+    <div class="p-3 bg-slate-50 rounded-lg"><div class="text-xs text-slate-500 mb-1">QBI Deduction (§199A)</div><div class="font-bold text-slate-800">${sc?fmt$(sc.qbi):'—'}</div></div>
+    <div class="p-3 bg-slate-50 rounded-lg"><div class="text-xs text-slate-500 mb-1">Retirement Contribution</div><div class="font-bold text-slate-800">${fmt$(tc.retirement)}</div><button onclick="showSection('retirement')" class="text-xs text-blue-600 hover:underline" style="background:none;border:none;cursor:pointer;font-family:inherit;padding:0;">Adjust →</button></div>
+    <div class="p-3 rounded-lg ${suspendedLoss>0?'bg-amber-50':'bg-slate-50'}"><div class="text-xs text-slate-500 mb-1">Suspended Passive Losses</div><div class="font-bold ${suspendedLoss>0?'text-amber-700':'text-slate-800'}">${fmt$(suspendedLoss)}</div>${suspendedLoss>0?'<div class=\"text-xs text-amber-600 mt-0.5\">Carried forward — Schedule E</div>':''}</div>
+  </div>
+</div>`;
 }
 
 // ---------- Deadlines ----------

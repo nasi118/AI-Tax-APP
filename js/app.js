@@ -157,7 +157,8 @@ function applyCustomClient(c){
   setVal('sc2-profit', c.income); setVal('ret-income', c.income); setVal('ret-age', c.age);
   setVal('ret-status', c.filing); setVal('veh-biz-miles', c.miles);
   setVal('sa-agi', Math.round(estimateClientAGI(c))); setVal('sa-filing', c.filing);
-  try{ calcScheduleC(); calcHomeOffice(); calcVehicle(); calcScorp(); calcRetirement(); calcScheduleA(); }catch(e){}
+  [calcScheduleC, calcHomeOffice, calcVehicle, calcScorp, calcRetirement, calcScheduleA, calcInvestmentIncome, calcSchedule1]
+    .forEach(fn => { try{ if(typeof fn === 'function') fn(); }catch(e){} });
   const nameEl = document.getElementById('sidebar-client-name'); if(nameEl) nameEl.textContent = c.name;
   showToast('Loaded: ' + c.name);
 }
@@ -675,7 +676,9 @@ if(typeof showSection === 'function'){
       'whatif': calcWhatIf,
       'state-tax': calcStateSection,
       'client-report': () => { renderReportOpts(); renderReport(); },
-      'schedule-a': () => { if(typeof calcScheduleA === 'function') calcScheduleA(); }
+      'schedule-a': () => { if(typeof calcScheduleA === 'function') calcScheduleA(); },
+      'schedule-1': () => { if(typeof calcSchedule1 === 'function') calcSchedule1(); },
+      'investment-income': () => { if(typeof calcInvestmentIncome === 'function') calcInvestmentIncome(); }
     };
     if(recalc[id]) recalc[id]();
   };
@@ -732,7 +735,8 @@ function syncCalculatorsFromClient(c){
   setVal('ret-income', c.income); setVal('ret-age', c.age); setVal('ret-status', c.filing);
   setVal('veh-biz-miles', c.miles);
   setVal('sa-agi', Math.round(estimateClientAGI(c))); setVal('sa-filing', c.filing);
-  try{ calcScheduleC(); calcHomeOffice(); calcVehicle(); calcScorp(); calcRetirement(); calcScheduleA(); }catch(e){}
+  [calcScheduleC, calcHomeOffice, calcVehicle, calcScorp, calcRetirement, calcScheduleA, calcInvestmentIncome, calcSchedule1]
+    .forEach(fn => { try{ if(typeof fn === 'function') fn(); }catch(e){} });
   renderProfileSummary();
   const nameEl = document.getElementById('sidebar-client-name'); if(nameEl) nameEl.textContent = c.name;
 }

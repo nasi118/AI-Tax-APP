@@ -1,9 +1,11 @@
 # Tax Planner — Individual 1040 (TY2026)
 
-A standalone Form 1040 planning workbench for tax year 2026, rebuilt as clean,
+A Form 1040 planning workbench for tax year 2026, rebuilt as clean,
 dependency-vendored static source from the compiled reference app
 (`Tax_Planner___Individual_1040_TY2026`). No build step: serve this directory
-(or the repo root) statically and open `index.html`.
+(or the repo root) statically and open `index.html`. It is embedded in the
+main Tax Advisory Pro app as the "1040 Planner (TY2026)" section (Planning
+nav group) and also works standalone at this path.
 
 ## What it does
 

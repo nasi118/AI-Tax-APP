@@ -18,9 +18,10 @@ Then visit `http://localhost:8080/`.
 ## Structure
 
 - `index.html` — app shell, layout, styles, and the core dashboard/client-profile logic
-- `planner/` — standalone **Tax Planner — Individual 1040 (TY2026)** workbench
-  (own engine, UI, and vendored libraries; linked from the Planning nav group —
-  see `planner/README.md`)
+- `planner/` — **Tax Planner — Individual 1040 (TY2026)** workbench (own
+  engine, UI, and vendored libraries — see `planner/README.md`). Embedded in
+  the main app as the "1040 Planner (TY2026)" section in the Planning nav
+  group, and also usable standalone at `planner/`.
 - `js/sections.js` / `js/app.js` — additional planning sections (clients, what-if planner, quarterly payments, documents, deadlines, state tax, client report) and their markup
 - `js/trust-sections.js` / `js/trust-app.js` — the Trusts & Estates module (trust classification, Form 1041, GST, fiduciary reference) and its markup
 

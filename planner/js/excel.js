@@ -382,7 +382,8 @@
   var INTDIV_KINDS = ['interest', 'taxExemptInterest', 'ordinaryDividend', 'qualifiedDividend'];
   var OTHER_KINDS = ['retirement', 'socialSecurity', 'unemployment', 'k1Ordinary', 'other'];
   var STRATEGY_KINDS = ['traditionalIra', 'sepIra', 'solo401k', 'hsa', 'charitableBunching', 'dafContribution',
-    'lossHarvesting', 'incomeDeferral', 'rothConversion', 'installmentSale', 'qcd', 'custom'];
+    'lossHarvesting', 'incomeDeferral', 'rothConversion', 'installmentSale', 'qcd',
+    'appreciatedStock', 'qofDeferral', 'qsbsExclusion', 'nua', 'scorpElection', 'plan529', 'casualtyLoss', 'custom'];
 
   async function parseProjectWorkbook(arrayBuffer) {
     var ExcelJS = await loadExcelJs();

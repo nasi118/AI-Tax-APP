@@ -137,7 +137,8 @@
     exportError: null,
     newScenarioName: '',
     importState: { dragOver: false, parsing: false, warnings: [], error: null, staged: null, jsonText: '' },
-    notesText: ''
+    notesText: '',
+    libraryAmounts: {}
   };
 
   function hydrate() {
@@ -1063,7 +1064,89 @@
             }
           }, 'Create from active'),
           h('button', { type: 'button', class: 'btn-light', onclick: duplicateActiveScenario }, 'Duplicate active'),
-          h('button', { type: 'button', class: 'btn-light ml-auto', onclick: function () { setModal('compare'); } }, 'Open comparison →'))));
+          h('button', { type: 'button', class: 'btn-light ml-auto', onclick: function () { setModal('compare'); } }, 'Open comparison →'))),
+      strategyLibraryPanel());
+  }
+
+  /* ---- strategy scenario library --------------------------------------------- */
+  function modelLibraryScenario(entry) {
+    var raw = ui.libraryAmounts[entry.key];
+    var amount = raw !== undefined ? parseAmount(raw) : entry.defaultAmount;
+    if (!(amount > 0)) amount = entry.defaultAmount;
+    ui.libraryAmounts[entry.key] = fmtUSD(amount);
+    var inputs = window.TaxLibrary.cloneInputs(activeScenario().inputs);
+    var applied = entry.apply(inputs, amount);
+    var prev = state.project;
+    var scenario = Engine.createScenario(entry.title + ' — ' + fmtUSD(amount), applied, {
+      description: entry.summary + ' [Source: ' + entry.source + ' · ' + entry.authority + ']'
+    });
+    state.project = Object.assign({}, prev, {
+      scenarios: prev.scenarios.concat([scenario]),
+      activeScenarioId: scenario.id,
+      updatedAt: new Date().toISOString()
+    });
+    persist(state.project);
+    state.result = computeForProject(state.project);
+    pushHistory(prev);
+    var baseline = prev.scenarios[0];
+    if (baseline) state.compareSelection = [baseline.id, scenario.id];
+    render();
+  }
+
+  function strategyLibraryPanel() {
+    var library = window.TaxLibrary;
+    if (!library) return null;
+    var byCategory = new Map();
+    for (var cat of library.CATEGORIES) byCategory.set(cat, []);
+    for (var entry of library.STRATEGY_LIBRARY) {
+      var bucket = byCategory.get(entry.category);
+      if (bucket) bucket.push(entry);
+    }
+    return h('section', { class: 'panel' },
+      h('div', { class: 'panel-header' },
+        h('span', {}, 'Strategy Scenario Library'),
+        h('span', { class: 'font-normal normal-case tracking-normal text-slate-500' },
+          library.STRATEGY_LIBRARY.length + ' strategies from the uploaded planning guides')),
+      h('p', { class: 'border-b border-slate-200 bg-slate-50 px-3 py-1.5 text-[11.5px] leading-snug text-slate-600' },
+        'Each strategy clones the active scenario, applies the modeled input changes, and selects it for comparison against the baseline. Sources: Roth IRA client letter · HNWI Tax Planning & Strategies Guide · CCH Capital Gains & Casualty Losses · Entity Classification (CCH) · Essential Tax & Wealth Planning Guide 2025.'),
+      library.CATEGORIES.map(function (cat) {
+        var entries = byCategory.get(cat) || [];
+        if (entries.length === 0) return null;
+        return h('div', {},
+          h('div', { class: 'border-b border-slate-200 bg-navy-900 px-3 py-1 text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate-300' }, cat),
+          h('ul', { class: 'divide-y divide-slate-100' },
+            entries.map(function (entry) {
+              return h('li', { class: 'flex flex-wrap items-start gap-3 px-3 py-2' },
+                h('div', { class: 'min-w-0 flex-1' },
+                  h('div', { class: 'flex flex-wrap items-baseline gap-2' },
+                    h('span', { class: 'text-[13px] font-semibold text-navy-900' }, entry.title),
+                    entry.estimated ? statusChip('estimated', undefined, true) : null,
+                    h('span', { class: 'font-mono text-[10px] text-slate-400' }, entry.authority)),
+                  h('p', { class: 'mt-0.5 text-[11.5px] leading-snug text-slate-600' }, entry.summary),
+                  h('p', { class: 'mt-0.5 text-[10.5px] text-slate-400' }, 'Source: ' + entry.source)),
+                h('div', { class: 'flex shrink-0 items-center gap-2 pt-0.5' },
+                  h('label', { class: 'field-label', for: 'lib-amt-' + entry.key }, entry.amountLabel),
+                  h('input', {
+                    id: 'lib-amt-' + entry.key, type: 'text', inputmode: 'decimal',
+                    class: 'input-num', style: { width: '110px' },
+                    value: ui.libraryAmounts[entry.key] !== undefined ? ui.libraryAmounts[entry.key] : fmtUSD(entry.defaultAmount),
+                    onfocus: function (e) { e.currentTarget.select(); },
+                    oninput: function (e) { ui.libraryAmounts[entry.key] = e.target.value; },
+                    onblur: function (e) {
+                      var parsed = parseAmount(e.target.value);
+                      ui.libraryAmounts[entry.key] = fmtUSD(parsed > 0 ? parsed : entry.defaultAmount);
+                      e.target.value = ui.libraryAmounts[entry.key];
+                    },
+                    onkeydown: function (e) { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } }
+                  }),
+                  h('button', {
+                    type: 'button', class: 'btn-primary',
+                    onclick: function () { modelLibraryScenario(entry); }
+                  }, 'Model scenario')));
+            })));
+      }),
+      h('p', { class: 'border-t border-slate-200 bg-amber-50 px-3 py-1.5 text-[11px] leading-snug text-amber-900' },
+        'Library scenarios are planning estimates: entries marked EST use simplified modeling (see each scenario’s tracking note in the Planning Strategies drawer). Verify eligibility, limits and elections against the cited authority before advising.'));
   }
 
   /* ---- editable grid -------------------------------------------------------- */
@@ -1551,6 +1634,13 @@
     { value: 'rothConversion', label: 'Roth conversion', authority: 'IRC §408A(d)(3)' },
     { value: 'installmentSale', label: 'Installment sale', authority: 'IRC §453' },
     { value: 'qcd', label: 'Qualified charitable distribution', authority: 'IRC §408(d)(8)' },
+    { value: 'appreciatedStock', label: 'Appreciated securities donation', authority: 'IRC §170(b)(1)(C)' },
+    { value: 'qofDeferral', label: 'Qualified Opportunity Fund deferral', authority: 'IRC §1400Z-2' },
+    { value: 'qsbsExclusion', label: 'QSBS §1202 exclusion', authority: 'IRC §1202' },
+    { value: 'nua', label: 'Net unrealized appreciation (employer stock)', authority: 'IRC §402(e)(4)' },
+    { value: 'scorpElection', label: 'S-corp election / reasonable compensation', authority: 'Reg. §301.7701-3; IRC §1362' },
+    { value: 'plan529', label: '529 plan contribution / front-load', authority: 'IRC §529' },
+    { value: 'casualtyLoss', label: 'Disaster casualty loss', authority: 'IRC §165(h)' },
     { value: 'custom', label: 'Custom strategy', authority: 'Practitioner judgement' }
   ];
 

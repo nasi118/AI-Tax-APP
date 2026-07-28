@@ -20,7 +20,18 @@ nav group) and also works standalone at this path.
   drawer.
 - **Report** — a print-ready client deliverable (browser print → PDF).
 - **Scenarios** — create/duplicate/rename/delete scenarios and compare 2–4
-  side by side with deltas vs. baseline and an input diff.
+  side by side with deltas vs. baseline and an input diff. Includes a
+  **Strategy Scenario Library** (`js/library.js`): one-click planning
+  scenarios sourced from the uploaded practice guides (Roth IRA client
+  letter, HNWI Tax Planning & Strategies Guide, CCH Capital Gains & Casualty
+  Losses, Entity Classification (CCH), Essential Tax & Wealth Planning Guide
+  2025) — Roth conversion bracket-fill, Solo 401(k)/SEP/HSA maximization,
+  NQDC deferral, QCDs, DAF bunching, appreciated-stock gifts, tax-loss and
+  gain harvesting, QOF deferral, QSBS §1202 exclusion, installment sales,
+  S-corp reasonable-compensation election, municipal-bond reallocation,
+  disaster casualty losses, and 529 front-loading. Each entry cites its
+  authority, applies real engine inputs to a cloned scenario, and
+  pre-selects the comparison vs. baseline.
 - **Coverage** — an honest matrix of what is implemented, partial, estimated,
   or out of scope.
 - **Import/Export** — round-trippable Excel workbook (ExcelJS), project JSON,

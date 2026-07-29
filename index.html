@@ -131,6 +131,30 @@ body{background:#fff}
 #sidebar.open{transform:translateX(0)}
 #main-content{margin-left:0!important}
 }
+/* ============ TAB CUSTOMIZER (per-tab background, theme, fonts, borders, column widths) ============ */
+.content-section{background:var(--tab-bg,transparent);font-family:var(--tab-font,var(--font));zoom:var(--tab-zoom,1)}
+.content-section.tap-has-borders .card,.content-section.tap-has-borders .kpi,.content-section.tap-has-borders .compare-col,.content-section.tap-has-borders .acc-item,.content-section.tap-has-borders .report-sheet{border-width:var(--tab-border-w,2px)!important;border-style:solid!important;border-color:var(--tab-border-c,var(--accent-deep))!important}
+.content-section.tap-has-borders .ttable{border:var(--tab-border-w,1px) solid var(--tab-border-c,var(--line))}
+.content-section.tap-has-borders .ttable th,.content-section.tap-has-borders .ttable td{border:var(--tab-border-w,1px) solid var(--tab-border-c,var(--line))!important}
+.content-section .ttable th{position:relative}
+.tap-col-handle{position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:6;display:none;border-radius:3px}
+.content-section.tap-col-resize .tap-col-handle{display:block}
+.tap-col-handle:hover,.tap-col-handle.tap-dragging{background:color-mix(in oklab,var(--accent-deep) 45%,transparent)}
+body.tap-col-dragging{cursor:col-resize!important;user-select:none}
+#tab-customize-btn.active{color:var(--accent-deep);background:#eff6ff}
+#tab-customize-panel{position:fixed;top:52px;right:16px;width:340px;max-height:calc(100vh - 70px);overflow-y:auto;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 40px rgba(16,24,40,.18);z-index:1000;display:none;padding:1.1rem}
+#tab-customize-panel.open{display:block}
+.tap-swatch-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
+.tap-swatch{border-radius:8px;border:2px solid transparent;padding:.4rem;cursor:pointer;text-align:center;font-size:.65rem;font-weight:600;color:#475569;transition:border-color .12s}
+.tap-swatch:hover{border-color:#cbd5e1}
+.tap-swatch.active{border-color:var(--accent-deep)}
+.tap-swatch-dot{width:100%;height:22px;border-radius:6px;margin-bottom:.3rem;border:1px solid rgba(0,0,0,.1)}
+.tap-toggle{position:relative;width:38px;height:22px;border-radius:999px;background:#e2e8f0;cursor:pointer;flex-shrink:0;transition:background .15s;border:none;padding:0}
+.tap-toggle.on{background:var(--accent-deep)}
+.tap-toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.tap-toggle.on::after{transform:translateX(16px)}
+.tap-row{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:.85rem}
+.tap-color-input{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);padding:2px;cursor:pointer;background:#fff}
 </style>
 </head>
 <body>
@@ -191,11 +215,83 @@ body{background:#fff}
       <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">OBBBA 2025 Active</span>
       <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">2026 Limits</span>
       <button onclick="showSection(&#39;client-report&#39;)" class="text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors ml-1">Client Report</button>
+      <button id="tab-customize-btn" onclick="toggleTabCustomizer()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors ml-1" title="Customize this tab's formatting &amp; theme">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
       <button onclick="window.print()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors ml-1">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
       </button>
     </div>
   </header>
+
+  <!-- ======== TAB CUSTOMIZER PANEL ======== -->
+  <div id="tab-customize-panel" class="no-print">
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <div class="text-sm font-bold text-slate-800">Customize Tab</div>
+        <div class="text-xs text-slate-400" id="tap-panel-tabname">Dashboard</div>
+      </div>
+      <button type="button" onclick="closeTabCustomizer()" class="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100" aria-label="Close">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="mb-1 text-xs font-semibold text-slate-600">Color Theme</div>
+    <div class="tap-swatch-row mb-4" id="tap-theme-swatches"></div>
+
+    <div class="tap-row">
+      <label class="form-label" style="margin-bottom:0;">Background color</label>
+      <input type="color" class="tap-color-input" id="tap-bg-color" oninput="tapSetField('bg', this.value)">
+    </div>
+    <div class="tap-row">
+      <label class="form-label" style="margin-bottom:0;">Accent / highlight color</label>
+      <input type="color" class="tap-color-input" id="tap-accent-color" oninput="tapSetField('accent', this.value)">
+    </div>
+    <div class="tap-row">
+      <label class="form-label" style="margin-bottom:0;">Border color</label>
+      <input type="color" class="tap-color-input" id="tap-line-color" oninput="tapSetField('line', this.value)">
+    </div>
+
+    <div class="mb-1 text-xs font-semibold text-slate-600 mt-1">Font</div>
+    <select class="form-select mb-3" id="tap-font-select" onchange="tapSetField('font', this.value)">
+      <option value="system">Sans-serif (default)</option>
+      <option value="serif">Serif</option>
+      <option value="mono">Monospace</option>
+      <option value="rounded">Rounded</option>
+    </select>
+
+    <div class="mb-1 text-xs font-semibold text-slate-600">Text &amp; element size</div>
+    <select class="form-select mb-4" id="tap-size-select" onchange="tapSetField('size', this.value)">
+      <option value="small">Small</option>
+      <option value="normal">Normal (default)</option>
+      <option value="large">Large</option>
+      <option value="xlarge">Extra Large</option>
+    </select>
+
+    <div class="tap-row">
+      <label class="form-label" style="margin-bottom:0;">Show table &amp; card borders</label>
+      <button type="button" class="tap-toggle" id="tap-borders-toggle" onclick="tapToggleField('bordersOn')" aria-label="Toggle borders"></button>
+    </div>
+    <div class="tap-row" id="tap-borderwidth-row">
+      <label class="form-label" style="margin-bottom:0;">Border thickness</label>
+      <select class="form-select" style="width:auto;" id="tap-borderwidth-select" onchange="tapSetField('borderWidth', Number(this.value))">
+        <option value="1">Thin</option>
+        <option value="2">Medium</option>
+        <option value="3">Thick</option>
+      </select>
+    </div>
+
+    <div class="tap-row">
+      <label class="form-label" style="margin-bottom:0;">Enable column resize (drag column edges)</label>
+      <button type="button" class="tap-toggle" id="tap-colresize-toggle" onclick="tapToggleField('colResize')" aria-label="Toggle column resize"></button>
+    </div>
+    <button type="button" onclick="tapResetColumnWidths()" class="text-xs text-slate-400 hover:text-red-600 mb-4" style="background:none;border:none;cursor:pointer;padding:0;font-family:inherit;">Reset column widths for this tab</button>
+
+    <div class="flex items-center gap-2 pt-3" style="border-top:1px solid var(--line);">
+      <button type="button" onclick="tapResetTab()" class="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:border-red-300 hover:text-red-700 transition-colors">Reset this tab</button>
+      <button type="button" onclick="tapApplyToAllTabs()" class="flex-1 px-3 py-2 rounded-lg bg-blue-700 text-white text-xs font-semibold hover:bg-blue-800 transition-colors">Apply to all tabs</button>
+    </div>
+  </div>
 
   <div class="px-8 py-6 max-w-7xl mx-auto space-y-6">
 
@@ -3112,6 +3208,8 @@ function showSection(id) {
   if (btn) btn.classList.add('active');
   document.getElementById('page-title').textContent = sectionTitles[id] || id;
   window.scrollTo(0, 0);
+  if (typeof applyTabStyle === 'function') applyTabStyle(id);
+  if (typeof tapOnTabSwitch === 'function') tapOnTabSwitch(id);
 }
 
 function showTaxComp(view) {
@@ -3134,6 +3232,241 @@ function switchGuideTab(tab) {
   const btns = document.querySelectorAll('#guide-tabs .tab-btn');
   tabs.forEach((t, i) => {
     if (btns[i]) btns[i].classList.toggle('active', t === tab);
+  });
+}
+
+// ================================================================
+// TAB CUSTOMIZER — per-tab background, color theme, fonts, borders, column widths
+// ================================================================
+const TAB_STYLE_PREFIX = 'tapStyle_';
+const TAB_COLS_PREFIX = 'tapCols_';
+const TAB_THEME_PRESETS = {
+  default: {name:'Default', bg:'#ffffff', accent:'#1d4ed8', accentDeep:'#1e40af', line:'#e4e7ec'},
+  slate:   {name:'Slate',   bg:'#f8fafc', accent:'#475569', accentDeep:'#334155', line:'#e2e8f0'},
+  ocean:   {name:'Ocean',   bg:'#f0f9ff', accent:'#0284c7', accentDeep:'#0369a1', line:'#bae6fd'},
+  emerald: {name:'Emerald', bg:'#f0fdf4', accent:'#059669', accentDeep:'#047857', line:'#bbf7d0'},
+  amber:   {name:'Amber',   bg:'#fffbeb', accent:'#d97706', accentDeep:'#b45309', line:'#fde68a'},
+  violet:  {name:'Violet',  bg:'#f5f3ff', accent:'#7c3aed', accentDeep:'#6d28d9', line:'#ddd6fe'},
+  rose:    {name:'Rose',    bg:'#fff1f2', accent:'#e11d48', accentDeep:'#be123c', line:'#fecdd3'},
+  dark:    {name:'Dark',    bg:'#0f172a', accent:'#3b82f6', accentDeep:'#60a5fa', line:'#334155'}
+};
+const TAB_FONT_STACKS = {
+  system: "'Instrument Sans',system-ui,sans-serif",
+  serif: "Georgia,'Times New Roman',serif",
+  mono: "'SFMono-Regular',Menlo,Consolas,'Liberation Mono',monospace",
+  rounded: "'Segoe UI Rounded','Nunito',system-ui,sans-serif"
+};
+const TAB_SIZE_ZOOM = {small: .9, normal: 1, large: 1.12, xlarge: 1.28};
+
+let tapOpenSectionId = null;
+
+function tapDefaultStyle() {
+  return {theme:'default', bg:'', accent:'', accentDeep:'', line:'', font:'system', size:'normal', bordersOn:false, borderWidth:2, colResize:false};
+}
+function tapGetStyle(id) {
+  try {
+    const raw = localStorage.getItem(TAB_STYLE_PREFIX + id);
+    if (raw) return Object.assign(tapDefaultStyle(), JSON.parse(raw));
+  } catch (e) {}
+  return tapDefaultStyle();
+}
+function tapSaveStyle(id, style) {
+  try { localStorage.setItem(TAB_STYLE_PREFIX + id, JSON.stringify(style)); } catch (e) {}
+}
+
+function applyTabStyle(id) {
+  const sec = document.getElementById('section-' + id);
+  if (!sec) return;
+  const s = tapGetStyle(id);
+  const preset = TAB_THEME_PRESETS[s.theme] || TAB_THEME_PRESETS.default;
+  sec.style.setProperty('--tab-bg', s.bg || preset.bg);
+  sec.style.setProperty('--accent', s.accent || preset.accent);
+  sec.style.setProperty('--accent-deep', s.accentDeep || preset.accentDeep);
+  sec.style.setProperty('--line', s.line || preset.line);
+  sec.style.setProperty('--tab-font', TAB_FONT_STACKS[s.font] || TAB_FONT_STACKS.system);
+  sec.style.setProperty('--tab-zoom', TAB_SIZE_ZOOM[s.size] != null ? TAB_SIZE_ZOOM[s.size] : 1);
+  sec.style.setProperty('--tab-border-w', (s.borderWidth || 2) + 'px');
+  sec.classList.toggle('tap-has-borders', !!s.bordersOn);
+  sec.classList.toggle('tap-col-resize', !!s.colResize);
+  tapBuildColumnHandles(id);
+  tapApplySavedColumnWidths(id);
+}
+
+function applyAllTabStylesOnLoad() {
+  document.querySelectorAll('.content-section').forEach(sec => {
+    applyTabStyle(sec.id.replace(/^section-/, ''));
+  });
+}
+
+function tapOnTabSwitch(id) {
+  if (tapOpenSectionId && document.getElementById('tab-customize-panel').classList.contains('open')) {
+    tapOpenSectionId = id;
+    tapRenderPanel();
+  }
+}
+
+function toggleTabCustomizer() {
+  const panel = document.getElementById('tab-customize-panel');
+  if (panel.classList.contains('open')) { closeTabCustomizer(); return; }
+  const active = document.querySelector('.content-section.active');
+  if (!active) return;
+  tapOpenSectionId = active.id.replace(/^section-/, '');
+  tapRenderPanel();
+  panel.classList.add('open');
+  const btn = document.getElementById('tab-customize-btn');
+  if (btn) btn.classList.add('active');
+}
+function closeTabCustomizer() {
+  document.getElementById('tab-customize-panel').classList.remove('open');
+  const btn = document.getElementById('tab-customize-btn');
+  if (btn) btn.classList.remove('active');
+}
+document.addEventListener('click', function(e) {
+  const panel = document.getElementById('tab-customize-panel');
+  if (!panel || !panel.classList.contains('open')) return;
+  // Use composedPath (frozen at dispatch time) rather than panel.contains(e.target):
+  // panel content re-renders on every setting change, which can detach the
+  // clicked node from the tree before this bubbled listener runs.
+  const path = e.composedPath ? e.composedPath() : [e.target];
+  if (path.includes(panel)) return;
+  if (e.target.closest && e.target.closest('#tab-customize-btn')) return;
+  closeTabCustomizer();
+});
+
+function tapRenderPanel() {
+  if (!tapOpenSectionId) return;
+  const s = tapGetStyle(tapOpenSectionId);
+  document.getElementById('tap-panel-tabname').textContent = sectionTitles[tapOpenSectionId] || tapOpenSectionId;
+  const swatchWrap = document.getElementById('tap-theme-swatches');
+  swatchWrap.innerHTML = Object.keys(TAB_THEME_PRESETS).map(key => {
+    const p = TAB_THEME_PRESETS[key];
+    const active = s.theme === key ? ' active' : '';
+    return `<div class="tap-swatch${active}" onclick="tapSetTheme('${key}')"><div class="tap-swatch-dot" style="background:${p.bg};border-color:${p.accentDeep}"></div>${p.name}</div>`;
+  }).join('');
+  const preset = TAB_THEME_PRESETS[s.theme] || TAB_THEME_PRESETS.default;
+  document.getElementById('tap-bg-color').value = s.bg || preset.bg;
+  document.getElementById('tap-accent-color').value = s.accent || preset.accentDeep;
+  document.getElementById('tap-line-color').value = s.line || preset.line;
+  document.getElementById('tap-font-select').value = s.font;
+  document.getElementById('tap-size-select').value = s.size;
+  document.getElementById('tap-borders-toggle').classList.toggle('on', !!s.bordersOn);
+  document.getElementById('tap-borderwidth-row').style.display = s.bordersOn ? 'flex' : 'none';
+  document.getElementById('tap-borderwidth-select').value = String(s.borderWidth || 2);
+  document.getElementById('tap-colresize-toggle').classList.toggle('on', !!s.colResize);
+}
+
+function tapSetField(field, value) {
+  if (!tapOpenSectionId) return;
+  const s = tapGetStyle(tapOpenSectionId);
+  s[field] = value;
+  if (field === 'accent') s.accentDeep = value; // one picker drives both shades used across buttons/highlights
+  tapSaveStyle(tapOpenSectionId, s);
+  applyTabStyle(tapOpenSectionId);
+  tapRenderPanel();
+}
+function tapSetTheme(theme) {
+  if (!tapOpenSectionId) return;
+  const s = tapGetStyle(tapOpenSectionId);
+  s.theme = theme; s.bg = ''; s.accent = ''; s.accentDeep = ''; s.line = '';
+  tapSaveStyle(tapOpenSectionId, s);
+  applyTabStyle(tapOpenSectionId);
+  tapRenderPanel();
+}
+function tapToggleField(field) {
+  if (!tapOpenSectionId) return;
+  const s = tapGetStyle(tapOpenSectionId);
+  s[field] = !s[field];
+  tapSaveStyle(tapOpenSectionId, s);
+  applyTabStyle(tapOpenSectionId);
+  tapRenderPanel();
+}
+function tapResetTab() {
+  if (!tapOpenSectionId) return;
+  tapSaveStyle(tapOpenSectionId, tapDefaultStyle());
+  try { localStorage.removeItem(TAB_COLS_PREFIX + tapOpenSectionId); } catch (e) {}
+  const sec = document.getElementById('section-' + tapOpenSectionId);
+  if (sec) sec.querySelectorAll('table.ttable th').forEach(th => th.style.width = '');
+  applyTabStyle(tapOpenSectionId);
+  tapRenderPanel();
+  showToast('Tab reset to default formatting');
+}
+function tapApplyToAllTabs() {
+  if (!tapOpenSectionId) return;
+  const s = tapGetStyle(tapOpenSectionId);
+  document.querySelectorAll('.content-section').forEach(sec => {
+    const id = sec.id.replace(/^section-/, '');
+    tapSaveStyle(id, s);
+    applyTabStyle(id);
+  });
+  showToast('Formatting applied to every tab');
+}
+
+// ---- Column resize ----
+function tapApplySavedColumnWidths(id) {
+  const sec = document.getElementById('section-' + id);
+  if (!sec) return;
+  let widths;
+  try { widths = JSON.parse(localStorage.getItem(TAB_COLS_PREFIX + id) || 'null'); } catch (e) { widths = null; }
+  if (!widths) return;
+  sec.querySelectorAll('table.ttable').forEach((table, ti) => {
+    const cols = widths[ti];
+    if (!cols) return;
+    table.style.tableLayout = 'fixed';
+    const headerRow = table.querySelector('tr');
+    if (!headerRow) return;
+    Array.from(headerRow.children).forEach((cell, ci) => {
+      if (cols[ci]) cell.style.width = cols[ci] + 'px';
+    });
+  });
+}
+function tapSaveColumnWidth(id, tableIndex, colIndex, width) {
+  let widths;
+  try { widths = JSON.parse(localStorage.getItem(TAB_COLS_PREFIX + id) || '{}'); } catch (e) { widths = {}; }
+  widths[tableIndex] = widths[tableIndex] || [];
+  widths[tableIndex][colIndex] = width;
+  try { localStorage.setItem(TAB_COLS_PREFIX + id, JSON.stringify(widths)); } catch (e) {}
+}
+function tapResetColumnWidths() {
+  if (!tapOpenSectionId) return;
+  try { localStorage.removeItem(TAB_COLS_PREFIX + tapOpenSectionId); } catch (e) {}
+  const sec = document.getElementById('section-' + tapOpenSectionId);
+  if (sec) sec.querySelectorAll('table.ttable th').forEach(th => th.style.width = '');
+  showToast('Column widths reset for this tab');
+}
+function tapBuildColumnHandles(id) {
+  const sec = document.getElementById('section-' + id);
+  if (!sec) return;
+  sec.querySelectorAll('table.ttable').forEach((table, ti) => {
+    const headerRow = table.querySelector('tr');
+    if (!headerRow) return;
+    Array.from(headerRow.children).forEach((th, ci) => {
+      if (th.querySelector(':scope > .tap-col-handle')) return; // handle already built
+      const handle = document.createElement('span');
+      handle.className = 'tap-col-handle';
+      handle.addEventListener('mousedown', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        const startX = e.clientX;
+        const startWidth = th.offsetWidth;
+        table.style.tableLayout = 'fixed';
+        handle.classList.add('tap-dragging');
+        document.body.classList.add('tap-col-dragging');
+        function onMove(ev) {
+          const w = Math.max(40, startWidth + (ev.clientX - startX));
+          th.style.width = w + 'px';
+        }
+        function onUp(ev) {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          handle.classList.remove('tap-dragging');
+          document.body.classList.remove('tap-col-dragging');
+          const w = Math.max(40, startWidth + (ev.clientX - startX));
+          tapSaveColumnWidth(id, ti, ci, w);
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+      th.appendChild(handle);
+    });
   });
 }
 
@@ -4446,6 +4779,7 @@ document.addEventListener('DOMContentLoaded', () => {
   try { calcEstate(); } catch (e) {}
   try { calcTaxComparison(); } catch (e) {}
   try { if (typeof updateDashboard === 'function') updateDashboard(); } catch (e) {}
+  try { applyAllTabStylesOnLoad(); } catch (e) {}
 });
 </script>
 <script src="js/sections.js"></script>

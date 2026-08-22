@@ -1,4 +1,4 @@
-# Tax Advisory Pro
+# Tax Planning Workbench
 
 A single-page tax strategy platform for a solo tax practice: client profiles, a
 tax calculation engine (federal/state income tax, SE tax, QBI, retirement,

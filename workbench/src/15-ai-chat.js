@@ -9,8 +9,9 @@
    stored as a tax number.
 
    Transport, in order of preference:
-     1. /api/grok — a secure server-side proxy (Vercel function). The xAI key
-        lives only in the deployment environment, never in browser code.
+     1. /api/grok — a secure server-side proxy (Vercel function) to the
+        Anthropic Claude API. The API key lives only in the deployment
+        environment, never in browser code.
      2. Bring-your-own-key fallback for offline/standalone use: the user's own
         Claude / OpenAI / Grok key, entered at runtime, stored in this
         browser's localStorage only, and sent only to that provider.
@@ -48,7 +49,7 @@ function loadAISettings() {
     };
   } catch (e) {}
   return {
-    provider: "grok",
+    provider: "claude",
     models: {},
     keys: {}
   };
@@ -186,7 +187,7 @@ async function callSecureEndpoint({
       body: JSON.stringify({
         system,
         messages,
-        model: "grok-4.5"
+        model: "claude-opus-5"
       })
     });
   } catch (e) {
@@ -838,7 +839,7 @@ async function callAI(requestType, {
         body: JSON.stringify({
           system,
           messages,
-          model: "grok-4.5"
+          model: "claude-opus-5"
         })
       });
       if (resp.status === 404 || resp.status === 405 || resp.status === 501) {

@@ -877,7 +877,7 @@ function exportToExcel(){
   const ws2 = XLSX.utils.json_to_sheet(qRows);
   ws2['!cols'] = [{wch:18},{wch:18},{wch:8},{wch:12}];
   XLSX.utils.book_append_sheet(wb, ws2, 'Quarterly — ' + (c.name.split(',')[0].slice(0,20)));
-  XLSX.writeFile(wb, 'Tax Advisory Pro — Clients.xlsx');
+  XLSX.writeFile(wb, 'Tax Planning Workbench — Clients.xlsx');
   if(typeof showToast==='function') showToast('Excel workbook downloaded');
 }
 window.exportToExcel = exportToExcel;

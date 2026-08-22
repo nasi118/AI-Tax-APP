@@ -31,11 +31,15 @@ function rateLimited(ip) {
   return false;
 }
 
-/* makeHandler({ requestType, timeoutMs, maxTokens }) -> Vercel handler */
+/* makeHandler({ requestType, timeoutMs, maxTokens, outputConfig }) -> Vercel handler.
+   timeoutMs must stay under the function's platform maxDuration (vercel.json)
+   with margin — otherwise the platform kills the invocation first and the
+   browser sees a bare 504 instead of our controlled error. */
 function makeHandler(cfg) {
   const requestType = cfg.requestType || "analyze";
-  const timeoutMs = cfg.timeoutMs || 120 * 1000;
+  const timeoutMs = cfg.timeoutMs || 110 * 1000;
   const maxTokens = cfg.maxTokens || 8192;
+  const outputConfig = cfg.outputConfig || null;
   return async function handler(req, res) {
     res.setHeader("Cache-Control", "no-store");
     if (req.method === "GET") {
@@ -97,7 +101,10 @@ function makeHandler(cfg) {
         },
         /* Adaptive thinking is the model default; fallbacks:"default" re-runs a
            safety-declined request on Anthropic's recommended substitute model. */
-        body: JSON.stringify({ model, max_tokens: maxTokens, system, messages, fallbacks: "default" }),
+        body: JSON.stringify(Object.assign(
+          { model, max_tokens: maxTokens, system, messages, fallbacks: "default" },
+          outputConfig ? { output_config: outputConfig } : null
+        )),
         signal: AbortSignal.timeout(timeoutMs)
       });
     } catch (e) {
@@ -107,8 +114,12 @@ function makeHandler(cfg) {
       return;
     }
     if (!upstream.ok) {
-      console.log(JSON.stringify({ evt: "ai_proxy", requestType, ip, model, ms: Date.now() - started, upstreamStatus: upstream.status }));
-      const friendly = upstream.status === 401 ? "The server's AI credential was rejected — contact the administrator." : upstream.status === 429 ? "The AI service is rate-limiting — try again shortly." : "The AI service returned an error.";
+      /* Log the upstream error detail server-side (no tax data in it) and put
+         the status code in the client message so failures are diagnosable. */
+      let detail = "";
+      try { detail = (await upstream.text()).slice(0, 300); } catch (e) {}
+      console.log(JSON.stringify({ evt: "ai_proxy", requestType, ip, model, ms: Date.now() - started, upstreamStatus: upstream.status, detail }));
+      const friendly = upstream.status === 401 ? "The server's AI credential was rejected — check ANTHROPIC_API_KEY on the deployment." : upstream.status === 429 ? "The AI service is rate-limiting — try again shortly." : upstream.status === 400 ? "The AI service rejected the request (upstream 400) — contact the administrator." : "The AI service returned an error (upstream " + upstream.status + ").";
       res.status(502).json({ error: friendly });
       return;
     }

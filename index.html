@@ -1,4 +1,16 @@
 <!DOCTYPE html>
+<!--
+  (c) 2026 AI Tax Strategy Advisors. All Rights Reserved.
+
+  Proprietary and Confidential. Unauthorized copying, distribution,
+  modification, reproduction, reverse engineering, disclosure, or commercial
+  use of this software, its workflows, methodologies, tax scenarios, database
+  structures, prompts, documentation, and related materials is prohibited
+  without prior written authorization from AI Tax Strategy Advisors.
+
+  Third-party libraries and public-domain government materials remain subject
+  to their respective ownership and license terms. See NOTICE.md.
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -133,6 +145,20 @@ body{background:#fff}
 }
 /* ============ TAB CUSTOMIZER (per-tab background, theme, fonts, borders, column widths) ============ */
 .content-section{background:var(--tab-bg,transparent);font-family:var(--tab-font,var(--font));zoom:var(--tab-zoom,1)}
+/* Number font: financial figures can use their own family/weight (customizer).
+   Presentation-only — stored values and calculations are untouched. */
+.content-section .kpi-value,.content-section input[type="number"],
+.content-section table td:nth-child(n+2),.content-section table th:nth-child(n+2),
+.content-section .tnum{font-family:var(--tab-font-num,var(--tab-font,var(--font)));font-variant-numeric:tabular-nums lining-nums}
+.content-section.tap-numw .kpi-value,.content-section.tap-numw input[type="number"],
+.content-section.tap-numw table td:nth-child(n+2),.content-section.tap-numw table th:nth-child(n+2),
+.content-section.tap-numw .tnum{font-weight:var(--tab-num-weight,inherit)}
+/* Calculation identity strip — always visible under the top bar */
+.recalc-strip{position:sticky;top:46px;z-index:19;display:flex;flex-wrap:wrap;gap:4px 14px;padding:4px 24px;font-size:10.5px;color:#64748b;background:#f8fafc;border-bottom:1px solid #e2e8f0}
+.recalc-strip.bad{background:#fef3c7;color:#92400e}
+.recalc-strip span:first-child{font-weight:600}
+.recalc-controls{display:inline-flex;align-items:center;gap:6px;margin-right:4px}
+@media (max-width:640px){.recalc-strip{padding:4px 12px}.recalc-controls select{display:none}}
 .content-section.tap-has-borders .card,.content-section.tap-has-borders .kpi,.content-section.tap-has-borders .compare-col,.content-section.tap-has-borders .acc-item,.content-section.tap-has-borders .report-sheet{border-width:var(--tab-border-w,2px)!important;border-style:solid!important;border-color:var(--tab-border-c,var(--accent-deep))!important}
 .content-section.tap-has-borders .ttable{border:var(--tab-border-w,1px) solid var(--tab-border-c,var(--line))}
 .content-section.tap-has-borders .ttable th,.content-section.tap-has-borders .ttable td{border:var(--tab-border-w,1px) solid var(--tab-border-c,var(--line))!important}
@@ -194,6 +220,7 @@ body.tap-col-dragging{cursor:col-resize!important;user-select:none}
 <div class="px-4 py-3 border-t text-xs sb-border sb-dimmer" style="border-color:#1c2942;color:#43536e;">
 <div class="font-medium sb-dim" style="color:#5b6b84;">Tax Advisory Pro v2026.2</div>
 <div class="mt-0.5">Demonstration purposes only. Not legal or tax advice.</div>
+<div class="mt-0.5">&copy; 2026 AI Tax Strategy Advisors. All Rights Reserved.</div>
 </div>
 </aside>
 
@@ -252,13 +279,33 @@ body.tap-col-dragging{cursor:col-resize!important;user-select:none}
       <input type="color" class="tap-color-input" id="tap-line-color" oninput="tapSetField('line', this.value)">
     </div>
 
-    <div class="mb-1 text-xs font-semibold text-slate-600 mt-1">Font</div>
+    <div class="mb-1 text-xs font-semibold text-slate-600 mt-1">Text font</div>
     <select class="form-select mb-3" id="tap-font-select" onchange="tapSetField('font', this.value)">
       <option value="system">Sans-serif (default)</option>
+      <option value="calibri">Calibri (falls back to Carlito / Segoe UI)</option>
+      <option value="arial">Arial</option>
       <option value="serif">Serif</option>
       <option value="mono">Monospace</option>
       <option value="rounded">Rounded</option>
     </select>
+
+    <div class="mb-1 text-xs font-semibold text-slate-600">Number font <span class="font-normal text-slate-400">(currency, tables, KPIs)</span></div>
+    <select class="form-select mb-3" id="tap-numfont-select" onchange="tapSetField('numFont', this.value)">
+      <option value="same">Same as text font</option>
+      <option value="calibri">Calibri (falls back to Carlito / Segoe UI)</option>
+      <option value="system">Sans-serif</option>
+      <option value="arial">Arial</option>
+      <option value="serif">Serif</option>
+      <option value="mono">Monospace</option>
+    </select>
+    <div class="tap-row">
+      <label class="form-label" style="margin-bottom:0;">Number weight</label>
+      <select class="form-select" style="width:auto;" id="tap-numweight-select" onchange="tapSetField('numWeight', this.value)">
+        <option value="normal">Normal</option>
+        <option value="semibold">Semibold</option>
+        <option value="bold">Bold</option>
+      </select>
+    </div>
 
     <div class="mb-1 text-xs font-semibold text-slate-600">Text &amp; element size</div>
     <select class="form-select mb-4" id="tap-size-select" onchange="tapSetField('size', this.value)">
@@ -3193,6 +3240,8 @@ body.tap-col-dragging{cursor:col-resize!important;user-select:none}
   <iframe id="workbench-frame" title="Individual Planning Workbench (TY2025 / TY2026)"
           style="display:block;width:100%;height:100%;border:0;background:#f1f5f9"></iframe>
 </div>
+<!-- Ownership line: visible on every section, desktop and mobile, without opening any menu -->
+<footer class="no-print" style="padding:12px 16px 10px;text-align:center;font-size:11px;color:#94a3b8;letter-spacing:.2px;">&copy; 2026 AI Tax Strategy Advisors. All Rights Reserved.</footer>
 </main>
 </div>
 
@@ -3285,16 +3334,19 @@ const TAB_THEME_PRESETS = {
 };
 const TAB_FONT_STACKS = {
   system: "'Instrument Sans',system-ui,sans-serif",
+  calibri: "Calibri,Carlito,'Segoe UI',Arial,sans-serif",
+  arial: "Arial,'Helvetica Neue',Helvetica,sans-serif",
   serif: "Georgia,'Times New Roman',serif",
   mono: "'SFMono-Regular',Menlo,Consolas,'Liberation Mono',monospace",
   rounded: "'Segoe UI Rounded','Nunito',system-ui,sans-serif"
 };
+const TAB_NUM_WEIGHTS = {normal: "400", semibold: "600", bold: "700"};
 const TAB_SIZE_ZOOM = {small: .9, normal: 1, large: 1.12, xlarge: 1.28};
 
 let tapOpenSectionId = null;
 
 function tapDefaultStyle() {
-  return {theme:'default', bg:'', accent:'', accentDeep:'', line:'', font:'system', size:'normal', bordersOn:false, borderWidth:2, colResize:false};
+  return {theme:'default', bg:'', accent:'', accentDeep:'', line:'', font:'system', numFont:'same', numWeight:'normal', size:'normal', bordersOn:false, borderWidth:2, colResize:false};
 }
 function tapGetStyle(id) {
   try {
@@ -3317,6 +3369,10 @@ function applyTabStyle(id) {
   sec.style.setProperty('--accent-deep', s.accentDeep || preset.accentDeep);
   sec.style.setProperty('--line', s.line || preset.line);
   sec.style.setProperty('--tab-font', TAB_FONT_STACKS[s.font] || TAB_FONT_STACKS.system);
+  const numStack = s.numFont && s.numFont !== 'same' ? TAB_FONT_STACKS[s.numFont] : null;
+  sec.style.setProperty('--tab-font-num', numStack || TAB_FONT_STACKS[s.font] || TAB_FONT_STACKS.system);
+  sec.style.setProperty('--tab-num-weight', TAB_NUM_WEIGHTS[s.numWeight] || '400');
+  sec.classList.toggle('tap-numw', !!(s.numWeight && s.numWeight !== 'normal'));
   sec.style.setProperty('--tab-zoom', TAB_SIZE_ZOOM[s.size] != null ? TAB_SIZE_ZOOM[s.size] : 1);
   sec.style.setProperty('--tab-border-w', (s.borderWidth || 2) + 'px');
   sec.classList.toggle('tap-has-borders', !!s.bordersOn);
@@ -3381,6 +3437,8 @@ function tapRenderPanel() {
   document.getElementById('tap-accent-color').value = s.accent || preset.accentDeep;
   document.getElementById('tap-line-color').value = s.line || preset.line;
   document.getElementById('tap-font-select').value = s.font;
+  document.getElementById('tap-numfont-select').value = s.numFont || 'same';
+  document.getElementById('tap-numweight-select').value = s.numWeight || 'normal';
   document.getElementById('tap-size-select').value = s.size;
   document.getElementById('tap-borders-toggle').classList.toggle('on', !!s.bordersOn);
   document.getElementById('tap-borderwidth-row').style.display = s.bordersOn ? 'flex' : 'none';
@@ -4543,6 +4601,9 @@ function calcRetirement() {
 }
 
 function updateRetirementChart(ira, sep, solo) {
+  // Chart.js is CDN-loaded; if unavailable the numbers above still stand —
+  // never let a chart-render failure sink the retirement calculation.
+  if (typeof Chart === 'undefined') return;
   if (chartRetirement) {
     chartRetirement.data.datasets[0].data = [ira, sep, solo];
     chartRetirement.update();
@@ -4886,5 +4947,6 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="js/app.js"></script>
 <script src="js/trust-sections.js"></script>
 <script src="js/trust-app.js"></script>
+<script src="js/recalc.js"></script>
 </body>
 </html>

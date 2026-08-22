@@ -58,3 +58,7 @@ project) — no key in the browser. On static hosting, or when the proxy is
 unconfigured, it falls back to a bring-your-own Anthropic key pasted into the
 config panel (kept in this browser's `localStorage` only and sent directly to
 Anthropic, never through our servers).
+
+---
+
+**Ownership Notice:** The proprietary software, workflows, methodologies, original tax scenarios, documentation, and related materials in this project are © 2026 AI Tax Strategy Advisors. All Rights Reserved. Third-party and public-domain materials retain their respective ownership status. See `NOTICE.md`.

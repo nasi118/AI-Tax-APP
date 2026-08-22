@@ -118,12 +118,15 @@ function buildTaxWorkbook(opts) {
     }]
   });
   coverRow("Client", meta.client || "—");
+  if (meta.clientId) coverRow("Client ID", meta.clientId);
   coverRow("Prepared by", meta.preparer || "—");
   coverRow("Firm", meta.firm || "—");
   coverRow("Date exported", meta.exportedAt);
   coverRow("Tax year", C.label);
   coverRow("Filing status", statusLabel);
   coverRow("Scenarios", scenarios.map(s => s.name).join(" | "));
+  coverRow("Engine / rules", "engine " + ENGINE_VERSION + " \u00b7 rules " + RULES_VERSION);
+  coverRow("Generated", meta.createdISO || meta.exportedAt);
   cover.blank();
   cover.add({
     cells: [{
@@ -151,7 +154,7 @@ function buildTaxWorkbook(opts) {
   cover.add({
     cells: [null, {
       t: "s",
-      v: "Directional planning estimates for discussion. Not a tax return, formal opinion, or legal advice. No source documents were verified. State and local tax and the alternative minimum tax are not modelled. Confirm entity facts, basis, eligibility and documentation before acting.",
+      v: "Directional planning estimates for discussion. Not a tax return, formal opinion, or legal advice. No source documents were verified. State and local tax and the alternative minimum tax are not modelled. Confirm entity facts, basis, eligibility and documentation before acting. \u00a9 2026 AI Tax Strategy Advisors. All Rights Reserved.",
       s: ST.wrap
     }],
     height: 46

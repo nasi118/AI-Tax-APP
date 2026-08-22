@@ -52,6 +52,9 @@ group rather than embedded.
 
 ## AI Tax Strategist
 
-The AI Strategist section calls an LLM API directly from the browser using a
-key the user pastes into the config panel for that session (never persisted,
-never shipped in source). Bring your own key.
+The AI Strategist section talks to Claude through the same secure server-side
+proxy as the workbench (`/api/grok`, needs `ANTHROPIC_API_KEY` on the Vercel
+project) — no key in the browser. On static hosting, or when the proxy is
+unconfigured, it falls back to a bring-your-own Anthropic key pasted into the
+config panel (kept in this browser's `localStorage` only and sent directly to
+Anthropic, never through our servers).

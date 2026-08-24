@@ -1,11 +1,11 @@
-/* /api/ai/build-report — grounded client-report narrative generation. */
+/* /api/ai/build-report — grounded client-report narrative.
+   The client generates a report ONE SECTION PER REQUEST, so each call is a
+   short focused writing task: low effort and a small token budget finish well
+   inside the platform's function-duration limit. Every figure comes from the
+   deterministic engine package; the model only writes narrative around it. */
 const { makeHandler } = require("../_lib/claude-proxy.js");
 module.exports = makeHandler({
   requestType: "build-report",
-  timeoutMs: 280000,
-  /* 10K tokens is a full narrative report; 16K could outrun the 300s
-     platform ceiling. effort "medium" keeps narrative quality while roughly
-     halving thinking time — all figures come from the engine, not the AI. */
-  maxTokens: 10000,
-  outputConfig: { effort: "medium" }
+  maxTokens: 3000,
+  outputConfig: { effort: "low" }
 });

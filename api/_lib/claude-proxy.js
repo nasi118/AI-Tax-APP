@@ -12,6 +12,14 @@
    controlled errors, usage metadata logged without tax data.
    ========================================================================== */
 
+/* The deployment platform kills a function at its plan's maximum duration
+   (Vercel Hobby = 60s) regardless of what this code intends. Every upstream
+   call must finish inside that window with margin, otherwise the browser gets
+   a bare platform 504 instead of a controlled, explainable error. Keep this
+   below the maxDuration in vercel.json, and keep vercel.json at or below the
+   plan ceiling — a higher value there is silently clamped, not honoured. */
+const PLATFORM_BUDGET_MS = 50 * 1000;
+
 const MAX_BODY_BYTES = 400 * 1024;
 const MAX_MESSAGES = 24;
 const MAX_MESSAGE_CHARS = 48 * 1024;
@@ -37,8 +45,8 @@ function rateLimited(ip) {
    browser sees a bare 504 instead of our controlled error. */
 function makeHandler(cfg) {
   const requestType = cfg.requestType || "analyze";
-  const timeoutMs = cfg.timeoutMs || 110 * 1000;
-  const maxTokens = cfg.maxTokens || 8192;
+  const timeoutMs = cfg.timeoutMs || PLATFORM_BUDGET_MS;
+  const maxTokens = cfg.maxTokens || 4096;
   const outputConfig = cfg.outputConfig || null;
   return async function handler(req, res) {
     res.setHeader("Cache-Control", "no-store");
@@ -89,28 +97,41 @@ function makeHandler(cfg) {
       return;
     }
     const started = Date.now();
+    const callUpstream = withOutputConfig => fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-beta": "server-side-fallback-2026-07-01"
+      },
+      /* Adaptive thinking is the model default; fallbacks:"default" re-runs a
+         safety-declined request on Anthropic's recommended substitute model. */
+      body: JSON.stringify(Object.assign(
+        { model, max_tokens: maxTokens, system, messages, fallbacks: "default" },
+        withOutputConfig && outputConfig ? { output_config: outputConfig } : null
+      )),
+      signal: AbortSignal.timeout(Math.max(5000, started + timeoutMs - Date.now()))
+    });
     let upstream;
     try {
-      upstream = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-beta": "server-side-fallback-2026-07-01"
-        },
-        /* Adaptive thinking is the model default; fallbacks:"default" re-runs a
-           safety-declined request on Anthropic's recommended substitute model. */
-        body: JSON.stringify(Object.assign(
-          { model, max_tokens: maxTokens, system, messages, fallbacks: "default" },
-          outputConfig ? { output_config: outputConfig } : null
-        )),
-        signal: AbortSignal.timeout(timeoutMs)
-      });
+      upstream = await callUpstream(true);
+      /* Self-healing: output_config (the effort control) is the only optional
+         parameter here. If this API version rejects it, retry once without it
+         rather than failing every AI request in the product — a slower answer
+         beats no answer. */
+      if (upstream.status === 400 && outputConfig) {
+        console.log(JSON.stringify({ evt: "ai_proxy", requestType, model, note: "retrying without output_config" }));
+        upstream = await callUpstream(false);
+      }
     } catch (e) {
       const timedOut = e && (e.name === "TimeoutError" || e.name === "AbortError");
       console.log(JSON.stringify({ evt: "ai_proxy", requestType, ip, model, ms: Date.now() - started, error: timedOut ? "timeout" : "network" }));
-      res.status(504).json({ error: timedOut ? "The AI service timed out — try a narrower request." : "The AI service is unreachable." });
+      res.status(504).json({
+        error: timedOut
+          ? "The AI request did not finish within this deployment's " + Math.round(timeoutMs / 1000) + "-second limit. Ask a narrower question, select fewer report sections, or reduce the number of scenarios in scope."
+          : "The AI service is unreachable."
+      });
       return;
     }
     if (!upstream.ok) {
@@ -135,10 +156,15 @@ function makeHandler(cfg) {
       res.status(502).json({ error: "The AI service declined this request — rephrase and try again." });
       return;
     }
-    const text = (Array.isArray(data && data.content) ? data.content : [])
+    let text = (Array.isArray(data && data.content) ? data.content : [])
       .filter(b => b && b.type === "text" && typeof b.text === "string")
       .map(b => b.text)
       .join("");
+    /* A reply cut off at the token ceiling would otherwise look like a
+       complete answer that simply stops mid-sentence — say so plainly. */
+    if (data && data.stop_reason === "max_tokens" && text) {
+      text += "\n\n[This response reached its length limit and is incomplete. Ask a narrower question, or request the remaining part.]";
+    }
     console.log(JSON.stringify({
       evt: "ai_proxy", requestType, ip, model: data && data.model || model, ms: Date.now() - started,
       stopReason: data && data.stop_reason,

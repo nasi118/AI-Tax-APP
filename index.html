@@ -2539,7 +2539,7 @@ body.tap-col-dragging{cursor:col-resize!important;user-select:none}
           <button class="quick-prompt w-full text-left p-2.5 rounded-lg bg-slate-50 hover:bg-blue-50 hover:text-blue-700 text-sm font-medium text-slate-700 border border-slate-200 hover:border-blue-200 transition-all" onclick="setPrompt(this.textContent)">How does OBBBA affect Sarah's QBI deduction?</button>
           <button class="quick-prompt w-full text-left p-2.5 rounded-lg bg-slate-50 hover:bg-blue-50 hover:text-blue-700 text-sm font-medium text-slate-700 border border-slate-200 hover:border-blue-200 transition-all" onclick="setPrompt(this.textContent)">Draft a client email summarizing Sarah's tax savings opportunities</button>
           <button class="quick-prompt w-full text-left p-2.5 rounded-lg bg-slate-50 hover:bg-blue-50 hover:text-blue-700 text-sm font-medium text-slate-700 border border-slate-200 hover:border-blue-200 transition-all" onclick="setPrompt(this.textContent)">What are the risks of the home office deduction for a nurse consultant?</button>
-          <button class="quick-prompt w-full text-left p-2.5 rounded-lg bg-slate-50 hover:bg-blue-50 hover:text-blue-700 text-sm font-medium text-slate-700 border border-slate-200 hover:border-blue-200 transition-all" onclick="setPrompt(this.textContent)">Create a 12-month tax action plan for Sarah Mitchell</button>
+          <button class="quick-prompt w-full text-left p-2.5 rounded-lg bg-slate-50 hover:bg-blue-50 hover:text-blue-700 text-sm font-medium text-slate-700 border border-slate-200 hover:border-blue-200 transition-all" onclick="setPrompt('Create a 12-month tax action plan for ' + activeClient().name)">Create a 12-month tax action plan for the active client</button>
         </div>
       </div>
     </div>
@@ -2554,7 +2554,7 @@ body.tap-col-dragging{cursor:col-resize!important;user-select:none}
               <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
             </div>
             <div class="bubble-ai">
-              Hello! I'm your AI Tax Strategist, pre-loaded with 2026 federal tax law, OBBBA provisions, and Sarah Mitchell's complete tax profile. I can help you with strategy analysis, planning scenarios, client communications, and tax law research. Enter your xAI API key and ask me anything — or click a quick prompt to get started!
+              Hello! I'm your AI Tax Strategist. My context is rebuilt from the active client and the latest deterministic calculation before every request. I can help with strategy analysis, planning scenarios, client communications, and tax law research. Enter your xAI API key and ask me anything — or click a quick prompt to get started!
             </div>
           </div>
         </div>
@@ -3544,6 +3544,18 @@ function calcFederalTax(taxableIncome, status) {
   return tax;
 }
 
+function calcFederalTaxWithPreferential(taxableIncome, qualifiedDividends, longTermGains, status) {
+  const preferential = Math.max(0, Math.min(taxableIncome, (+qualifiedDividends || 0) + Math.max(0, +longTermGains || 0)));
+  const ordinary = Math.max(0, taxableIncome - preferential);
+  const zeroCap = status === 'mfj' ? 96700 : 48350;
+  const twentyCap = status === 'mfj' ? 600050 : 533400;
+  const zeroAmount = Math.min(preferential, Math.max(0, zeroCap - ordinary));
+  const remaining = preferential - zeroAmount;
+  const fifteenAmount = Math.min(remaining, Math.max(0, twentyCap - Math.max(ordinary, zeroCap)));
+  const twentyAmount = Math.max(0, remaining - fifteenAmount);
+  return calcFederalTax(ordinary, status) + fifteenAmount * .15 + twentyAmount * .20;
+}
+
 // self-employment tax on Schedule C net profit only (rental/investment income is never subject to SE tax)
 function calcSETax(netProfit) {
   const ssWageBase = 176100;
@@ -3558,6 +3570,16 @@ function calcTaxComparison() {
   const val = id => { const el = document.getElementById(id); return el ? (+el.value || 0) : 0; };
   const fmt = n => (n < 0 ? '(' : '') + '$' + Math.round(Math.abs(n)).toLocaleString() + (n < 0 ? ')' : '');
   const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  if (!document.getElementById('tc-base-stateTax')) {
+    const totalRow = document.getElementById('tc-base-totalTax').closest('tr');
+    const medicareRow = document.createElement('tr');
+    medicareRow.innerHTML = '<td>Additional Medicare Tax</td><td class="text-right" id="tc-base-addlMedicare">$0</td><td class="text-right" id="tc-s1-addlMedicare">$0</td><td class="text-right" id="tc-s2-addlMedicare">$0</td><td class="text-right" id="tc-s3-addlMedicare">$0</td>';
+    const stateRow = document.createElement('tr');
+    stateRow.innerHTML = '<td>Estimated State Income Tax</td><td class="text-right" id="tc-base-stateTax">$0</td><td class="text-right" id="tc-s1-stateTax">$0</td><td class="text-right" id="tc-s2-stateTax">$0</td><td class="text-right" id="tc-s3-stateTax">$0</td>';
+    totalRow.parentNode.insertBefore(medicareRow, totalRow);
+    totalRow.parentNode.insertBefore(stateRow, totalRow);
+    totalRow.firstElementChild.childNodes[0].nodeValue = 'Total Tax Liability (including state) ';
+  }
 
   // ---- Base column: pulled live from the other calculator tabs ----
   const sc = window.SC_RESULTS || { netProfit: 0, seTax: 0, qbi: 0 };
@@ -3580,12 +3602,14 @@ function calcTaxComparison() {
   const sa = window.SA_RESULTS || { deductionUsed: baseFiling === 'mfj' ? 30000 : 15000 };
 
   const baseTaxableIncome = Math.max(0, baseAGI - sa.deductionUsed - sc.qbi);
-  const baseFedTax = calcFederalTax(baseTaxableIncome, baseFiling);
+  const baseFedTax = calcFederalTaxWithPreferential(baseTaxableIncome, inv.divQualified, inv.ltGains, baseFiling);
   const baseSeTax = sc.seTax;
   const baseNetInvIncome = Math.max(0, inv.total + re.allowedAmount);
   const baseNiitThresh = baseFiling === 'mfj' ? 250000 : 200000;
   const baseNiit = 0.038 * Math.min(baseNetInvIncome, Math.max(0, baseAGI - baseNiitThresh));
-  const baseTotalTax = baseFedTax + baseSeTax + baseNiit;
+  const baseAddlMedicare = .009 * Math.max(0, baseWages + Math.max(0, sc.netProfit) * .9235 - baseNiitThresh);
+  const baseStateTax = calcStateTax(activeClient().state, baseTaxableIncome, baseFiling);
+  const baseTotalTax = baseFedTax + baseSeTax + baseNiit + baseAddlMedicare + baseStateTax;
 
   setTxt('tc-base-interest', fmt(inv.interest));
   setTxt('tc-base-divOrdinary', fmt(inv.divOrdinary));
@@ -3609,6 +3633,8 @@ function calcTaxComparison() {
   setTxt('tc-base-fedTax', fmt(baseFedTax));
   setTxt('tc-base-seTax', fmt(baseSeTax));
   setTxt('tc-base-niit', fmt(baseNiit));
+  setTxt('tc-base-addlMedicare', fmt(baseAddlMedicare));
+  setTxt('tc-base-stateTax', fmt(baseStateTax));
   setTxt('tc-base-totalTax', fmt(baseTotalTax));
 
   window.TC_BASE = { wages: baseWages, interest: inv.interest, divOrdinary: inv.divOrdinary, divQualified: inv.divQualified,
@@ -3616,7 +3642,7 @@ function calcTaxComparison() {
     hsa: s1.hsa, retirement: s1.retirement, seHealth: s1.seHealthIns, otherDeduct: s1.otherDeductions, halfSeTax: s1.halfSeTax,
     deduction: sa.deductionUsed, qbi: sc.qbi, filing: baseFiling, agi: baseAGI, magi: baseAGI, taxableIncome: baseTaxableIncome,
     fedTax: baseFedTax, seTax: baseSeTax, niit: baseNiit, netInvIncome: baseNetInvIncome, niitThreshold: baseNiitThresh,
-    totalTax: baseTotalTax };
+    additionalMedicareTax: baseAddlMedicare, stateTax: baseStateTax, totalTax: baseTotalTax, clientId: activeClientId() };
 
   // ---- Scenario columns: fully editable, formulas recompute live ----
   [1, 2, 3].forEach(n => {
@@ -3625,6 +3651,7 @@ function calcTaxComparison() {
     const wages = val(p + 'wages');
     const interest = val(p + 'interest');
     const divOrdinary = val(p + 'divOrdinary');
+    const divQualified = val(p + 'divQualified');
     const stGains = val(p + 'stGains');
     const ltGains = val(p + 'ltGains');
     const schedC = val(p + 'schedC');
@@ -3644,11 +3671,13 @@ function calcTaxComparison() {
     const deduction = val(p + 'deduction');
     const qbi = Math.max(0, schedC) * 0.20;
     const taxableIncome = Math.max(0, agi - deduction - qbi);
-    const fedTax = calcFederalTax(taxableIncome, filing);
+    const fedTax = calcFederalTaxWithPreferential(taxableIncome, divQualified, ltGains, filing);
     const netInvIncome = Math.max(0, interest + divOrdinary + stGains + ltGains + schedE);
     const niitThresh = filing === 'mfj' ? 250000 : 200000;
     const niit = 0.038 * Math.min(netInvIncome, Math.max(0, agi - niitThresh));
-    const totalTax = fedTax + seTax + niit;
+    const addlMedicare = .009 * Math.max(0, wages + Math.max(0, schedC) * .9235 - niitThresh);
+    const stateTax = calcStateTax(activeClient().state, taxableIncome, filing);
+    const totalTax = fedTax + seTax + niit + addlMedicare + stateTax;
 
     setTxt(p + 'totalIncome', fmt(totalIncome));
     setTxt(p + 'halfSe', fmt(halfSe));
@@ -3659,6 +3688,8 @@ function calcTaxComparison() {
     setTxt(p + 'fedTax', fmt(fedTax));
     setTxt(p + 'seTax', fmt(seTax));
     setTxt(p + 'niit', fmt(niit));
+    setTxt(p + 'addlMedicare', fmt(addlMedicare));
+    setTxt(p + 'stateTax', fmt(stateTax));
     setTxt(p + 'totalTax', fmt(totalTax));
   });
 
@@ -4612,37 +4643,43 @@ function toggleAcc(id) {
 // ================================================================
 // AI TAX STRATEGIST
 // ================================================================
-const AI_SYSTEM_PROMPT = `You are an expert tax strategist and CPA specializing in self-employed individuals, S-Corps, and small business owners. You have deep knowledge of:
+function buildAISystemPrompt() {
+  const c = activeClient();
+  const tc = window.TC_BASE || {};
+  const prompt = `You are an expert tax strategist and CPA specializing in self-employed individuals, S-Corps, and small business owners.
 
-CLIENT PROFILE — Sarah Mitchell, RN, MSN:
-- Age 42, Single, California resident
-- Mental Health Nursing Consultant — Sole Proprietor (Schedule C)
-- Net Business Income: $145,000 | Investment Income: $8,500 | Rental Income: ~$7,200 net
-- No current retirement plan | Home office: 180 sq ft / 1,800 sq ft total | Business miles: 12,000/yr
+ACTIVE CLIENT PROFILE:
+- Client: ${c.name}
+- Age: ${c.age}; filing status: ${c.filing}; state: ${c.state}
+- Occupation: ${c.occupation || 'Not provided'}; entity: ${c.entity || 'Not provided'}
+- Business income: ${fmt$(c.income || 0)}; investment income: ${fmt$(c.invest || 0)}; rental receipts: ${fmt$(c.rental || 0)}; business miles: ${(c.miles || 0).toLocaleString()}
+- Latest deterministic calculation: AGI ${fmt$(tc.agi || 0)}, taxable income ${fmt$(tc.taxableIncome || 0)}, total tax ${fmt$(tc.totalTax || 0)}
 
-2026 TAX LAW (OBBBA):
-- Federal brackets (single): 10% to $11,925 / 12% to $48,475 / 22% to $103,350 / 24% to $197,300 / 32% to $250,525 / 35% to $626,350 / 37% above
-- Standard deduction: $15,000 single | QBI §199A: 20% of qualified business income — PERMANENT under OBBBA
-- 100% Bonus Depreciation — PERMANENT under OBBBA
-- SALT cap: $40,000 (through 2029)
-- Estate exemption: $15M per person (permanent)
-- SE tax: net profit × 0.9235 × 15.3% | SS wage base: $176,100
-- Solo 401(k) 2026: $24,500 employee + employer 25% of net comp, total max $70,000
-- SEP-IRA: 25% of net compensation, max $70,000
-- IRA: $7,000 ($8,000 if 50+) | HSA self-only: $4,300
-- NIIT: 3.8% on investment income above $200,000 single
-
-KEY STRATEGIES TO ANALYZE:
-- S-Corp election (Form 2553 by March 15): ~$9,013 gross SE savings / ~$5,800 net after overhead
-- Solo 401(k): up to $36,250 deductible for Sarah
-- Augusta Rule (IRC §280A): 14-day home rental — tax-free to Sarah, deductible to business
-- Backdoor Roth IRA: approach the $165k phase-out limit
-- HSA: $4,300 above-the-line deduction
-- Home office: regular method (~$2,356) vs simplified ($900)
-
-Provide concise, actionable, accurate answers. Use specific dollar amounts when possible. Note IRC code sections when relevant. Always recommend consulting a qualified CPA for final decisions.`;
+Use only the active-client profile and latest deterministic calculation above. Ignore any example-client facts in suggested prompts. Ask for missing facts instead of assuming them. Distinguish modeled results from general guidance, and recommend qualified human review before implementation.`;
+  return prompt;
+}
 
 let chatHistory = [];
+function aiHistoryKey(id) { return 'tap-ai-history-' + id; }
+function saveAIHistoryForClient(id) {
+  if (!id) return;
+  try { localStorage.setItem(aiHistoryKey(id), JSON.stringify(chatHistory)); } catch (e) {}
+}
+function loadAIHistoryForClient(id) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(aiHistoryKey(id)) || '[]');
+    return Array.isArray(saved) ? saved : [];
+  } catch (e) { return []; }
+}
+function switchAIClientHistory(previousId, nextId) {
+  saveAIHistoryForClient(previousId);
+  chatHistory = loadAIHistoryForClient(nextId);
+  const host = document.getElementById('ai-chat-history');
+  if (!host) return;
+  host.innerHTML = '';
+  if (!chatHistory.length) appendChat('ai', 'AI context is ready for ' + activeClient().name + '.');
+  else chatHistory.forEach(m => appendChat(m.role === 'assistant' ? 'ai' : 'user', m.content));
+}
 
 function setPrompt(text) {
   document.getElementById('ai-input').value = text;
@@ -4694,9 +4731,11 @@ async function sendToAI() {
   sendBtn.innerHTML = '<div class="spinner"></div> Thinking…';
 
   chatHistory.push({ role: 'user', content: input });
+  saveAIHistoryForClient(activeClientId());
 
   try {
-    const messages = [{ role: 'system', content: AI_SYSTEM_PROMPT }, ...chatHistory];
+    if (typeof recalculateAll === 'function') recalculateAll();
+    const messages = [{ role: 'system', content: buildAISystemPrompt() }, ...chatHistory];
     const res = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
@@ -4717,9 +4756,11 @@ async function sendToAI() {
       || 'No response received.';
 
     chatHistory.push({ role: 'assistant', content: reply });
+    saveAIHistoryForClient(activeClientId());
     appendChat('ai', reply);
   } catch (err) {
     chatHistory.pop();
+    saveAIHistoryForClient(activeClientId());
     const msg = err?.message || String(err);
     const hint = /Failed to fetch|NetworkError|CORS/i.test(msg)
       ? ' This may be a network restriction blocking requests to api.x.ai from this environment — try again from a standard browser tab with normal internet access.'
@@ -4756,8 +4797,9 @@ function escapeHtml(str) {
 
 function clearChat() {
   chatHistory = [];
+  saveAIHistoryForClient(activeClientId());
   const history = document.getElementById('ai-chat-history');
-  history.innerHTML = `<div class="chat-ai"><div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div><div class="bubble-ai">Conversation cleared. How can I help you with Sarah's tax strategy?</div></div>`;
+  history.innerHTML = `<div class="chat-ai"><div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div><div class="bubble-ai">Conversation cleared. How can I help with ${activeClient().name}'s tax strategy?</div></div>`;
 }
 
 // ================================================================
@@ -4765,6 +4807,7 @@ function clearChat() {
 // ================================================================
 document.addEventListener('DOMContentLoaded', () => {
   try { restoreSavedApiKey(); } catch (e) {}
+  try { switchAIClientHistory(null, activeClientId()); } catch (e) {}
   try { initDashboardCharts(); } catch (e) {}
   try { calcScheduleC(); } catch (e) {}
   try { calcScheduleA(); } catch (e) {}

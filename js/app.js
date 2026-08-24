@@ -121,6 +121,28 @@ function allClients(){
 function activeClientId(){ return localStorage.getItem('tap-active-client') || 's1'; }
 function activeClient(){ return allClients().find(c => c.id === activeClientId()) || DEMO_CLIENTS[0]; }
 
+const CLIENT_INPUTS_KEY = 'tap-client-inputs-v1';
+function clientInputStore(){ try{ return JSON.parse(localStorage.getItem(CLIENT_INPUTS_KEY)||'{}'); }catch(e){ return {}; } }
+function captureClientInputs(id){
+  if(!id) return;
+  const values = {};
+  document.querySelectorAll('.content-section input[id], .content-section select[id], .content-section textarea[id]').forEach(el => {
+    values[el.id] = el.type === 'checkbox' || el.type === 'radio' ? !!el.checked : el.value;
+  });
+  const store = clientInputStore(); store[id] = values;
+  try{ localStorage.setItem(CLIENT_INPUTS_KEY, JSON.stringify(store)); }catch(e){}
+}
+function restoreClientInputs(id){
+  const values = clientInputStore()[id];
+  if(!values) return false;
+  Object.keys(values).forEach(key => {
+    const el = document.getElementById(key); if(!el) return;
+    if(el.type === 'checkbox' || el.type === 'radio') el.checked = !!values[key];
+    else el.value = values[key];
+  });
+  return true;
+}
+
 function renderSwitcher(){
   const sel = document.getElementById('client-switcher');
   if(!sel) return;
@@ -130,23 +152,49 @@ function renderSwitcher(){
 
 const _origLoadScenario = typeof loadScenario === 'function' ? loadScenario : null;
 loadScenario = function(n){
+  const previousClientId = activeClientId();
+  captureClientInputs(previousClientId);
   if(_origLoadScenario) _origLoadScenario(n);
   localStorage.setItem('tap-active-client', 's'+n);
-  if(clientOverrides()['s'+n]) applyCustomClient(activeClient());
+  if(clientOverrides()['s'+n]) applyCustomClient(activeClient(), {skipRecalculate:true});
+  restoreClientInputs('s'+n);
+  if(typeof switchAIClientHistory === 'function') switchAIClientHistory(previousClientId, 's'+n);
+  recalculateAll();
   refreshClientViews();
 };
 
 function switchClient(id){
   const c = allClients().find(x => x.id === id);
   if(!c) return;
+  const previousClientId = activeClientId();
+  captureClientInputs(previousClientId);
   localStorage.setItem('tap-active-client', id);
-  if(c.demo){ if(_origLoadScenario) _origLoadScenario(c.demo); if(clientOverrides()[c.id]) applyCustomClient(c); }
-  else applyCustomClient(c);
+  if(c.demo){ if(_origLoadScenario) _origLoadScenario(c.demo); if(clientOverrides()[c.id]) applyCustomClient(c, {skipRecalculate:true}); }
+  else applyCustomClient(c, {skipRecalculate:true});
+  restoreClientInputs(id);
+  if(typeof switchAIClientHistory === 'function') switchAIClientHistory(previousClientId, id);
+  recalculateAll();
   refreshClientViews();
 }
 
-function applyCustomClient(c){
+function applyCustomClient(c, opts){
+  opts = opts || {};
   const setVal = (id,v) => { const el = document.getElementById(id); if(el) el.value = v; };
+  if(!c.demo){
+    ['section-investment-income','section-schedule-e','section-form-1041','section-gst','section-trust-center'].forEach(sectionId => {
+      const section = document.getElementById(sectionId); if(!section) return;
+      section.querySelectorAll('input, textarea').forEach(el => {
+        if(el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+        else if(el.type === 'number') el.value = 0;
+        else el.value = '';
+      });
+      section.querySelectorAll('select').forEach(el => { el.selectedIndex = 0; });
+    });
+    // The legacy client schema holds aggregate investment and rental amounts;
+    // map them explicitly instead of retaining another client's detailed DOM.
+    setVal('inv-interest', c.invest || 0);
+    setVal('re-rent', c.rental || 0);
+  }
   setVal('cp-name', c.name); setVal('cp-age', c.age); setVal('cp-filing', c.filing);
   const cpState = document.getElementById('cp-state');
   if(cpState){ cpState.value = ['CA','TX','FL','NY','WA'].includes(c.state) ? c.state : 'other'; }
@@ -159,8 +207,7 @@ function applyCustomClient(c){
   setVal('sa-agi', Math.round(estimateClientAGI(c))); setVal('sa-filing', c.filing);
   setVal('re-agi', Math.round(estimateClientAGI(c)));
   setVal('tc-base-filing', c.filing);
-  [calcScheduleC, calcHomeOffice, calcVehicle, calcScorp, calcRetirement, calcScheduleA, calcRealEstate, calcInvestmentIncome, calcSchedule1]
-    .forEach(fn => { try{ if(typeof fn === 'function') fn(); }catch(e){} });
+  if(!opts.skipRecalculate) recalculateAll();
   const nameEl = document.getElementById('sidebar-client-name'); if(nameEl) nameEl.textContent = c.name;
   showToast('Loaded: ' + c.name);
 }
@@ -214,7 +261,8 @@ function updateDashboard(){
   const c = activeClient();
   const incomeInput = document.getElementById('cp-biz-income');
   const income = incomeInput && +incomeInput.value ? +incomeInput.value : c.income;
-  const base = taxEngine({income, filing:c.filing, state:c.state, invest:c.invest});
+  const live = window.TC_BASE;
+  const base = live && live.clientId === c.id ? {total:live.totalTax, fed:live.fedTax, seFica:live.seTax, state:live.stateTax||0, niit:live.niit} : taxEngine({income, filing:c.filing, state:c.state, invest:c.invest});
   const opt = taxEngine({income, filing:c.filing, state:c.state, invest:c.invest, ret:Math.min(36250, Math.round(income*.25)), scorp:income>60000, compPct:.30, hsa:true});
   const kpis = document.querySelectorAll('#section-dashboard .kpi-value');
   if(kpis.length >= 4){
@@ -624,12 +672,13 @@ function renderReport(){
   const host = document.getElementById('report-body');
   if(!host) return;
   const c = activeClient();
+  recalculateAll({skipDashboard:true});
   const tc = window.TC_BASE;
   const sa = window.SA_RESULTS;
   const sc = window.SC_RESULTS || {netProfit:0, qbi:0};
   const inv = window.INV_RESULTS || {interest:0, interestExempt:0};
   const re = window.RE_RESULTS || {allowedAmount:0};
-  if(!tc || !sa){ host.innerHTML = '<div class="text-sm text-slate-500 p-6">Visit the Schedule 1, Schedule A, and Tax Year Comparison tabs first so live figures are available for the report.</div>'; return; }
+  if(!tc || !sa){ host.innerHTML = '<div class="text-sm text-slate-500 p-6">The current client could not be recalculated. Review the calculator inputs and try again.</div>'; return; }
 
   const q = quarterlyState();
   const today = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
@@ -648,12 +697,9 @@ function renderReport(){
   const totalIncome = tc.wages + tc.interest + tc.divOrdinary + tc.stGains + tc.ltGains + tc.schedC + tc.schedE + tc.otherIncome;
   const aboveLineDeductions = tc.hsa + tc.retirement + tc.seHealth + tc.halfSeTax + tc.otherDeduct;
 
-  // Additional Medicare Tax — 0.9% on wages + SE net earnings above threshold (not modeled elsewhere in the app yet)
-  const addlMedThresh = tc.filing === 'mfj' ? 250000 : 200000;
-  const seNetEarnings = Math.max(0, tc.schedC) * 0.9235;
-  const addlMedicareTax = 0.009 * Math.max(0, (tc.wages + seNetEarnings) - addlMedThresh);
+  const addlMedicareTax = tc.additionalMedicareTax || 0;
   const taxOnOrdinaryIncome = Math.max(0, tc.fedTax);
-  const taxBreakdownTotal = taxOnOrdinaryIncome + tc.seTax + tc.niit + addlMedicareTax;
+  const taxBreakdownTotal = taxOnOrdinaryIncome + tc.seTax + tc.niit + addlMedicareTax + (tc.stateTax || 0);
 
   const brk = bracketBreakdown(tc.taxableIncome, tc.filing);
   const magiRows = magiPlanningRows(tc.magi, tc.filing);
@@ -798,7 +844,7 @@ ${opts.disclaimer?`<div class="p-3 bg-slate-50 rounded-lg text-xs text-slate-500
     if(chartRptComp) chartRptComp.destroy();
     const compEl = document.getElementById('rpt-chart-comp');
     if(compEl){
-      const dl = [['Tax on Ordinary Income',taxOnOrdinaryIncome,navy],['Self-Employment Tax',tc.seTax,blue1],['Net Investment Income Tax',tc.niit,blue2],['Additional Medicare Tax',addlMedicareTax,blue3]].filter(d=>d[1]>0.5);
+      const dl = [['Federal Income Tax',taxOnOrdinaryIncome,navy],['Self-Employment Tax',tc.seTax,blue1],['Net Investment Income Tax',tc.niit,blue2],['Additional Medicare Tax',addlMedicareTax,blue3],['Estimated State Income Tax',tc.stateTax||0,'#b45309']].filter(d=>d[1]>0.5);
       chartRptComp = new Chart(compEl, { type:'pie',
         data:{ labels:dl.map(d=>`${d[0]}  ${fmt$(d[1])} | ${(d[1]/taxBreakdownTotal*100).toFixed(1)}%`), datasets:[{ data:dl.map(d=>Math.round(d[1])), backgroundColor:dl.map(d=>d[2]), borderWidth:2, borderColor:'#fff' }] },
         options:{ responsive:true, maintainAspectRatio:false, animation:false,
@@ -892,11 +938,25 @@ function clearAppData(){
 window.clearAppData = clearAppData;
 
 // ---------- Live recalculation across tabs ----------
+function recalculateAll(opts){
+  opts = opts || {};
+  const ordered = ['calcScheduleC','calcHomeOffice','calcVehicle','calcScorp','calcRetirement','calcInvestmentIncome','calcRealEstate','calcSchedule1','calcScheduleA','calcTaxComparison','calcEstTax','calcEstate','classifyTrust','calc1041','calcGST'];
+  const failures = [];
+  ordered.forEach(name => {
+    const fn = window[name]; if(typeof fn !== 'function') return;
+    try{ fn(); }catch(err){ failures.push({module:name,error:String(err && err.message || err)}); }
+  });
+  window.TAP_LAST_RECALC = {clientId:activeClientId(),at:Date.now(),failures};
+  if(!opts.skipDashboard){ try{ updateDashboard(); }catch(err){ failures.push({module:'updateDashboard',error:String(err)}); } }
+  return window.TAP_LAST_RECALC;
+}
+window.recalculateAll = recalculateAll;
 // every tab re-computes from current state each time it is shown
 if(typeof showSection === 'function'){
   const _origShowSection = showSection;
   showSection = function(id){
     _origShowSection(id);
+    recalculateAll({skipDashboard:id === 'dashboard'});
     const recalc = {
       'dashboard': updateDashboard,
       'client-profile': () => { updateDashboard(); renderProfileSummary(); },
@@ -970,8 +1030,7 @@ function syncCalculatorsFromClient(c){
   setVal('sa-agi', Math.round(estimateClientAGI(c))); setVal('sa-filing', c.filing);
   setVal('re-agi', Math.round(estimateClientAGI(c)));
   setVal('tc-base-filing', c.filing);
-  [calcScheduleC, calcHomeOffice, calcVehicle, calcScorp, calcRetirement, calcScheduleA, calcRealEstate, calcInvestmentIncome, calcSchedule1]
-    .forEach(fn => { try{ if(typeof fn === 'function') fn(); }catch(e){} });
+  recalculateAll();
   renderProfileSummary();
   const nameEl = document.getElementById('sidebar-client-name'); if(nameEl) nameEl.textContent = c.name;
 }
@@ -1007,10 +1066,12 @@ document.addEventListener('change', e => {
     try{ calcScorp(); calcRetirement(); updateDashboard(); renderQuarterly(); syncWhatIfFromClient(); syncStateSectionFromClient(); renderProfileSummary(); }catch(err){}
   }
   if(e.target.closest('#section-client-report')) return;
+  captureClientInputs(activeClientId());
   renderClients(); renderReport();
 });
 
 function refreshClientViews(){
+  recalculateAll({skipDashboard:true});
   renderSwitcher();
   renderClients();
   updateDashboard();
@@ -1030,6 +1091,8 @@ document.addEventListener('DOMContentLoaded', () => {
   fillStateSelect(document.getElementById('nc-state'), 'CA');
   const act = activeClient();
   if(act.demo && act.demo !== 1 && _origLoadScenario) _origLoadScenario(act.demo);
-  else if(!act.demo) applyCustomClient(act);
+  else if(!act.demo) applyCustomClient(act, {skipRecalculate:true});
+  restoreClientInputs(act.id);
+  recalculateAll();
   refreshClientViews();
 });

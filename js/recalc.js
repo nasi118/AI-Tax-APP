@@ -36,7 +36,8 @@ const RECALC_MODULES = [
   { id: "trust-center", label: "Trust Classification", fns: ["classifyTrust"] },
   { id: "form-1041", label: "Form 1041", fns: ["calc1041"] },
   { id: "gst", label: "GST Planner", fns: ["calcGST"] },
-  { id: "client-report", label: "Client Report", fns: ["renderReportOpts", "renderReport"] }
+  { id: "client-report", label: "Client Report", fns: ["renderReportOpts", "renderReport"] },
+  { id: "scenarios", label: "Scenario Library", fns: ["renderScenarioLibrary"] }
 ];
 /* Tabs whose calculations run inside an embedded app with its own service */
 const RECALC_EMBEDDED = { "workbench": "Planning Workbench", "planner-1040": "1040 Planner" };

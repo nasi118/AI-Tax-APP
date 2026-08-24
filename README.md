@@ -38,6 +38,15 @@ Then visit `http://localhost:8080/`.
   repository. On static hosting (GitHub Pages) these endpoints 404 and the
   workbench's AI panels simply report the service as unavailable; everything
   else works.
+- `js/scenarios.js` — the **scenario registry**: the data model, the built-in
+  scenario library, the loader, custom (user-saved) scenarios, and the library
+  UI. To add a new built-in scenario, append one object to
+  `BUILT_IN_SCENARIOS` — nothing else needs to change. The client switcher,
+  the library grid, the comparison table, the dashboard, the Client Report and
+  the recalculation service all read from that array. Only `id`, `name` and
+  `business.netIncome` are required; every other field is defaulted by
+  `normalizeScenario()`. Map a new calculator input by adding one row to
+  `SCENARIO_FIELD_MAP` rather than writing another assignment.
 - `js/sections.js` / `js/app.js` — additional planning sections (clients, what-if planner, quarterly payments, documents, deadlines, state tax, client report) and their markup
 - `js/trust-sections.js` / `js/trust-app.js` — the Trusts & Estates module (trust classification, Form 1041, GST, fiduciary reference) and its markup
 

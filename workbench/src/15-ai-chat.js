@@ -170,7 +170,21 @@ function parseProposals(text) {
 }
 
 /* ------------------------------------------------------------- TRANSPORT */
-let grokEndpointDown = false;
+/* Per-route "this endpoint is not deployed here" flags.
+   ONLY a 404/405/501 sets one — those mean the serverless route genuinely is
+   not present (static hosting, or the function was never deployed), which is
+   the case the bring-your-own-key fallback exists for. A timeout, a 5xx, or a
+   network blip must NEVER latch: those are transient, they can happen on one
+   capability while the others are healthy, and latching them used to disable
+   every AI feature for the rest of the page session and demand a personal API
+   key. Reset per route so one slow report cannot break chat. */
+const aiEndpointDown = {};
+function markEndpointDown(requestType) {
+  aiEndpointDown[requestType || "grok"] = true;
+}
+function isEndpointDown(requestType) {
+  return !!aiEndpointDown[requestType || "grok"];
+}
 async function callSecureEndpoint({
   system,
   messages,
@@ -192,13 +206,13 @@ async function callSecureEndpoint({
     });
   } catch (e) {
     if (e.name === "AbortError") throw e;
-    grokEndpointDown = true;
-    throw Object.assign(new Error("endpoint-unavailable"), {
-      endpointUnavailable: true
+    /* Network-level failure: transient, do not latch the route off. */
+    throw Object.assign(new Error("The AI service could not be reached. Check the connection and try again."), {
+      transport: true
     });
   }
   if (resp.status === 404 || resp.status === 405 || resp.status === 501) {
-    grokEndpointDown = true;
+    markEndpointDown("grok");
     throw Object.assign(new Error("endpoint-unavailable"), {
       endpointUnavailable: true
     });
@@ -371,7 +385,7 @@ function AIReviewer({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [includeScenario, setIncludeScenario] = useState(true);
-  const [mode, setMode] = useState(grokEndpointDown ? "own-key" : "endpoint");
+  const [mode, setMode] = useState(isEndpointDown("grok") ? "own-key" : "endpoint");
   const [decided, setDecided] = useState({});
   const abortRef = useRef(null);
   const bodyRef = useRef(null);
@@ -422,7 +436,7 @@ function AIReviewer({
       return out;
     });
     try {
-      if (mode === "endpoint" && !grokEndpointDown) {
+      if (mode === "endpoint" && !isEndpointDown("grok")) {
         try {
           const reply = await callSecureEndpoint({
             system,
@@ -531,7 +545,7 @@ function AIReviewer({
     className: mode === "endpoint" ? "on" : "",
     onClick: () => setMode("endpoint"),
     type: "button",
-    disabled: grokEndpointDown
+    disabled: isEndpointDown("grok")
   }, "Secure endpoint"), /*#__PURE__*/React.createElement("button", {
     className: mode === "own-key" ? "on" : "",
     onClick: () => setMode("own-key"),
@@ -828,7 +842,7 @@ async function callAI(requestType, {
   signal,
   ownKey
 }) {
-  if (!grokEndpointDown) {
+  if (!isEndpointDown(requestType)) {
     try {
       const resp = await fetch(AI_ENDPOINTS[requestType] || AI_ENDPOINTS.analyze, {
         method: "POST",
@@ -843,7 +857,7 @@ async function callAI(requestType, {
         })
       });
       if (resp.status === 404 || resp.status === 405 || resp.status === 501) {
-        grokEndpointDown = true;
+        markEndpointDown(requestType);
       } else {
         const j = await resp.json().catch(() => ({}));
         if (!resp.ok) throw new Error(j.error || "AI service error (HTTP " + resp.status + ")");
@@ -851,7 +865,11 @@ async function callAI(requestType, {
       }
     } catch (e) {
       if (e.name === "AbortError") throw e;
-      if (!grokEndpointDown) throw e;
+      /* Surface real failures (timeout, rate limit, upstream error) instead of
+         silently falling through to the personal-key path — the server IS the
+         configured transport, and hiding its error message behind "no personal
+         API key is saved" made every failure look like a configuration fault. */
+      if (!isEndpointDown(requestType)) throw e;
     }
   }
   // Fallback: user's own key from the Reviewer settings.

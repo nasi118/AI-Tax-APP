@@ -50,6 +50,10 @@ wrap.insertAdjacentHTML('beforeend', '' +
   P('The same pattern exists for the other nine calculators: S-Corp Salary, QBI, SSTB Phase-out, Tax Brackets, Charitable, Audit Risk, &sect;163(j), Payroll Tax, and Roth Conversion. Each offers <strong>Create test scenario</strong>, <strong>Ask AI to review</strong>, and <strong>Add note</strong>.') +
   NOTE('A bigger deduction is not automatically a better outcome. Compare the <strong>spendable cash</strong> column alongside the tax column — a retirement deduction defers tax and reduces cash available this year.') +
 
+  H('3b. The Scenario Library') +
+  P('The <strong>Scenario Library</strong> (Planning &rarr; Demo Scenarios) holds a set of built-in client profiles covering a wide range of fact patterns — SSTB phase-out, high-SALT multi-state, real estate professional, low S-Corp salary risk, W-2 plus side Schedule C, high net worth with NIIT, a young professional maximizing deferrals, and an equipment-heavy contractor. Search or filter by entity type and planning issue, tick any number of scenarios into the side-by-side comparison table, and press <strong>Load</strong> to push one into every calculator.') +
+  P('<strong>Save your own.</strong> Set the calculators up for a real client and press <strong>Save current state</strong> — it becomes a saved scenario you can reload, rename, delete, export to JSON, or import on another machine. Saved scenarios are marked as yours and live in this browser only.') +
+
   H('4. Do the numbers flow to the other tabs?') +
   P('Inside the Planning Workbench: <strong>yes, completely.</strong> One calculation pipeline serves every view. Any scenario you add or edit immediately updates the Dashboard KPIs and Form 1040 walk, the Scenarios ledger, the SE / MAGI / QBI / SEHI modules, goal alignment, the audit trail, the client report, the Excel export, and the context handed to the AI.') +
   P('On the platform tabs the modules also feed each other — the Retirement tab passes its deduction into Schedule 1, which flows into the 1040 totals.') +

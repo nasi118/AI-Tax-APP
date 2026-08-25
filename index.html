@@ -2630,138 +2630,35 @@ body.tap-col-dragging{cursor:col-resize!important;user-select:none}
      SECTION: DEMO SCENARIOS
      ============================================================ -->
 <div id="section-scenarios" class="content-section">
-  <div class="mb-6">
-    <h1 class="text-2xl font-bold text-slate-900">Demo Scenarios</h1>
-    <p class="text-slate-500 text-sm mt-1">Three representative client profiles — click any S1/S2/S3 button in the sidebar to load a scenario into all calculators</p>
+  <div class="mb-6 flex items-end justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Scenario Library</h1>
+      <p class="text-slate-500 text-sm mt-1">Built-in client profiles plus your own saved scenarios — loading one populates every calculator and recalculates the dashboard</p>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="promptSaveScenario()" class="px-3 py-2 bg-blue-700 text-white rounded-lg font-semibold text-xs hover:bg-blue-800 transition-colors">Save current state</button>
+      <button onclick="exportScenarios()" class="px-3 py-2 bg-white text-slate-600 border border-slate-200 rounded-lg font-semibold text-xs hover:border-blue-300">Export</button>
+      <label class="px-3 py-2 bg-white text-slate-600 border border-slate-200 rounded-lg font-semibold text-xs hover:border-blue-300 cursor-pointer">Import
+        <input type="file" accept="application/json" class="hidden" onchange="importScenariosFromFile(this.files[0]); this.value='';">
+      </label>
+    </div>
   </div>
 
-  <!-- Comparison overview table -->
+  <div class="card mb-5">
+    <div class="flex items-center gap-3 flex-wrap mb-3">
+      <input id="scenario-search" class="form-input" style="max-width:280px;" placeholder="Search name, profession, state, issue…"
+             oninput="setScenarioQuery(this.value)">
+      <span id="scenario-count" class="text-xs text-slate-500"></span>
+    </div>
+    <div id="scenario-filters" class="flex flex-wrap gap-1.5"></div>
+  </div>
+
   <div class="card mb-6">
-    <h3 class="font-bold text-slate-800 mb-4">At a Glance — All Three Scenarios</h3>
-    <div class="overflow-x-auto">
-      <table class="ttable">
-        <thead>
-          <tr>
-            <th>Attribute</th>
-            <th class="text-blue-700">S1 — Sarah Mitchell</th>
-            <th class="text-emerald-700">S2 — James Rodriguez</th>
-            <th class="text-amber-700">S3 — Linda Park</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td class="font-semibold text-slate-600">Profession</td><td>RN, MSN — Nurse Consultant</td><td>MD — Physician Practice</td><td>APRN-NP — Advanced Practice</td></tr>
-          <tr><td class="font-semibold text-slate-600">Gross Revenue</td><td>$168,000</td><td>$320,000</td><td>$550,000</td></tr>
-          <tr><td class="font-semibold text-slate-600">Net Business Income</td><td>$145,000</td><td>$285,000</td><td>$485,000</td></tr>
-          <tr><td class="font-semibold text-slate-600">Filing Status</td><td>Single</td><td>Married Filing Jointly</td><td>Single</td></tr>
-          <tr><td class="font-semibold text-slate-600">State</td><td>California (state income tax)</td><td>Texas (no state income tax)</td><td>New York (high state + city tax)</td></tr>
-          <tr><td class="font-semibold text-slate-600">Age</td><td>42</td><td>48</td><td>55</td></tr>
-          <tr><td class="font-semibold text-slate-600">Entity Type</td><td>Sole Proprietor</td><td>Sole Proprietor → S-Corp candidate</td><td>S-Corp (already elected)</td></tr>
-          <tr><td class="font-semibold text-slate-600">Business Miles</td><td>12,000/yr</td><td>22,000/yr</td><td>28,000/yr</td></tr>
-          <tr><td class="font-semibold text-slate-600">Rental Income</td><td>$24,000 gross</td><td>None</td><td>$72,000 gross</td></tr>
-          <tr><td class="font-semibold text-slate-600">Investment Income</td><td>$8,500</td><td>$22,000</td><td>$48,000</td></tr>
-          <tr><td class="font-semibold text-slate-600">Key Tax Issues</td><td>SE tax, QBI, home office, S-Corp timing</td><td>High SE tax, S-Corp election, retirement maximization</td><td>NIIT exposure, trust planning, estate, §1411</td></tr>
-        </tbody>
-      </table>
-    </div>
+    <h3 class="font-bold text-slate-800 mb-4">Side-by-side comparison</h3>
+    <div id="scenario-compare"></div>
   </div>
 
-  <!-- Scenario 1 card -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
-    <div class="card border-t-4 border-t-blue-600">
-      <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-bold uppercase tracking-widest text-blue-600">Scenario 1</span>
-        <button onclick="loadScenario(1)" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors">Load S1</button>
-      </div>
-      <h3 class="font-bold text-slate-900 text-lg">Sarah Mitchell, RN, MSN</h3>
-      <p class="text-slate-500 text-sm mt-0.5 mb-4">Mental Health Nursing Consultant · Single · California · Age 42</p>
-      <div class="space-y-2 text-sm">
-        <div class="flex justify-between py-1.5 border-b border-slate-100"><span class="text-slate-600">Net Business Income</span><span class="font-semibold">$145,000</span></div>
-        <div class="flex justify-between py-1.5 border-b border-slate-100"><span class="text-slate-600">Entity</span><span class="font-semibold">Sole Proprietor</span></div>
-        <div class="flex justify-between py-1.5 border-b border-slate-100"><span class="text-slate-600">SE Tax Exposure</span><span class="font-semibold text-red-600">~$20,318</span></div>
-        <div class="flex justify-between py-1.5 border-b border-slate-100"><span class="text-slate-600">QBI §199A Deduction</span><span class="font-semibold text-emerald-600">~$29,000</span></div>
-        <div class="flex justify-between py-1.5"><span class="text-slate-600">S-Corp Savings Potential</span><span class="font-semibold text-emerald-600">~$9,013/yr</span></div>
-      </div>
-      <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600">
-        <div class="font-semibold text-slate-700 mb-1">Key Focus Areas</div>
-        <ul class="space-y-1">
-          <li>· S-Corp election decision (Form 2553 by Mar 15)</li>
-          <li>· Solo 401(k) — up to $36,250 deductible</li>
-          <li>· Home office — simplified vs regular method</li>
-          <li>· Vehicle deduction — standard mileage at $0.67/mi</li>
-          <li>· Augusta Rule (§280A) — 14-day home rental</li>
-          <li>· Backdoor Roth IRA (approaching $165k phase-out)</li>
-        </ul>
-      </div>
-      <div class="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg text-xs text-slate-600">
-        <div class="font-semibold text-blue-700 mb-1">Assumptions</div>
-        <p>No current retirement plan. Renting, no primary home ownership. No dependents. No W-2 wages. Rental property is a long-term investment, not short-term rental. Standard deduction applies (rental interest and SALT below threshold).</p>
-      </div>
-    </div>
-
-    <!-- Scenario 2 card -->
-    <div class="card border-t-4 border-t-emerald-600">
-      <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-bold uppercase tracking-widest text-emerald-600">Scenario 2</span>
-        <button onclick="loadScenario(2)" class="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-emerald-700 transition-colors">Load S2</button>
-      </div>
-      <h3 class="font-bold text-slate-900 text-lg">James Rodriguez, MD</h3>
-      <p class="text-slate-500 text-sm mt-0.5 mb-4">Physician — Growing Private Practice · MFJ · Texas · Age 48</p>
-      <div class="space-y-2 text-sm">
-        <div class="flex justify-between py-1.5 border-b border-slate-100"><span class="text-slate-600">Net Business Income</span><span class="font-semibold">$285,000</span></div>
-        <div class="flex justify-between py-1.5 border-b border-slate-100"><span class="text-slate-600">Entity</span><span class="font-semibold">Sole Prop → S-Corp candidate</span></div>
-        <div class="flex justify-between py-1.5 border-b border-slate-100"><span class="text-slate-600">SE Tax Exposure</span><span class="font-semibold text-red-600">~$29,442</span></div>
-        <div class="flex justify-between py-1.5 border-b border-slate-100"><span class="text-slate-600">QBI §199A Deduction</span><span class="font-semibold text-amber-600">At risk — SSTB threshold</span></div>
-        <div class="flex justify-between py-1.5"><span class="text-slate-600">S-Corp Savings Potential</span><span class="font-semibold text-emerald-600">~$18,000+/yr</span></div>
-      </div>
-      <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600">
-        <div class="font-semibold text-slate-700 mb-1">Key Focus Areas</div>
-        <ul class="space-y-1">
-          <li>· Urgent S-Corp election — highest SE savings scenario</li>
-          <li>· Defined Benefit Plan — deduct $150k–$200k/yr</li>
-          <li>· QBI phase-out at $383k MFJ — monitor SSTB status</li>
-          <li>· Texas = no state income tax (major advantage)</li>
-          <li>· NIIT approaching threshold — investment income</li>
-          <li>· 529 plans for college + SECURE 2.0 Roth conversions</li>
-        </ul>
-      </div>
-      <div class="mt-3 p-3 bg-emerald-50 border border-emerald-100 rounded-lg text-xs text-slate-600">
-        <div class="font-semibold text-emerald-700 mb-1">Assumptions</div>
-        <p>Married with 2 children. Spouse has no W-2 income (stay-at-home parent). Own primary residence with mortgage. No rental properties. Practice is fee-for-service only. Texas resident — zero state income tax applies, creating room for retirement maximization and investment growth.</p>
-      </div>
-    </div>
-
-    <!-- Scenario 3 card -->
-    <div class="card border-t-4 border-t-amber-500">
-      <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-bold uppercase tracking-widest text-amber-600">Scenario 3</span>
-        <button onclick="loadScenario(3)" class="text-xs bg-amber-500 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-amber-600 transition-colors">Load S3</button>
-      </div>
-      <h3 class="font-bold text-slate-900 text-lg">Linda Park, APRN-NP</h3>
-      <p class="text-slate-500 text-sm mt-0.5 mb-4">Nurse Practitioner — High Income · Single · New York · Age 55</p>
-      <div class="space-y-2 text-sm">
-        <div class="flex justify-between py-1.5 border-b border-slate-100"><span class="text-slate-600">Net Business Income</span><span class="font-semibold">$485,000</span></div>
-        <div class="flex justify-between py-1.5 border-b border-slate-100"><span class="text-slate-600">Entity</span><span class="font-semibold">S-Corp (already elected)</span></div>
-        <div class="flex justify-between py-1.5 border-b border-slate-100"><span class="text-slate-600">NIIT Exposure (3.8%)</span><span class="font-semibold text-red-600">~$1,824 on investments</span></div>
-        <div class="flex justify-between py-1.5 border-b border-slate-100"><span class="text-slate-600">NY State Tax Rate</span><span class="font-semibold text-red-600">10.9% + NYC 3.876%</span></div>
-        <div class="flex justify-between py-1.5"><span class="text-slate-600">Estate Planning Need</span><span class="font-semibold text-amber-600">High — asset accumulation</span></div>
-      </div>
-      <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600">
-        <div class="font-semibold text-slate-700 mb-1">Key Focus Areas</div>
-        <ul class="space-y-1">
-          <li>· S-Corp reasonable compensation documentation</li>
-          <li>· Defined Benefit + Solo 401(k) combo — $200k+ deduction</li>
-          <li>· NIIT mitigation — qualified opportunity zones, real estate</li>
-          <li>· Rental real estate portfolio — depreciation + §1031</li>
-          <li>· Trust structures — NY estate planning</li>
-          <li>· Age 55 catch-up contributions — maximize all accounts</li>
-        </ul>
-      </div>
-      <div class="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-lg text-xs text-slate-600">
-        <div class="font-semibold text-amber-700 mb-1">Assumptions</div>
-        <p>Single, no dependents, age 55 (catch-up eligible). Owns primary residence in NYC. Two rental properties with existing mortgages. S-Corp elected 3 years ago with $155k reasonable compensation (32% of net). Growing asset base — combined net worth approaching $2M. Estate planning is becoming relevant.</p>
-      </div>
-    </div>
-  </div>
+  <div id="scenario-grid" class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5"></div>
 
   <!-- Scenario usage guidance -->
   <div class="card">
@@ -4391,116 +4288,11 @@ function switchScorpTab(tab) {
 
 // ================================================================
 // SCENARIO LOADER
+// The scenario registry, data model, loader and library UI live in
+// js/scenarios.js — a single data-driven source of truth. Add a new built-in
+// scenario by appending one object to BUILT_IN_SCENARIOS there; no code here
+// needs to change.
 // ================================================================
-const SCENARIOS = {
-  1: {
-    name: 'Sarah Mitchell, RN', label: 'Scenario 1 — Sole Prop, Single, CA',
-    gross: 168000, expenses: { advertising:1200, vehicle:8400, insurance:2400, legal:1800, office:600, homeoffice:900, supplies:1500, phone:1200, travel:2000, meals:500, education:1500, licenses:800 },
-    profit: 145000, bizIncome: 145000, investIncome: 8500, rental: 24000, age: 42,
-    filing: 'single', state: 'CA', miles: 12000, officeSqft: 180, homeSqft: 1800,
-    scorpProfit: 145000, scorpPct: 30, scorpOverhead: 3200,
-    retIncome: 145000, retAge: 42
-  },
-  2: {
-    name: 'James Rodriguez, MD', label: 'Scenario 2 — Growing Practice, MFJ, TX',
-    gross: 320000, expenses: { advertising:3500, vehicle:12600, insurance:5400, legal:3200, office:1800, homeoffice:1500, supplies:4200, phone:2400, travel:6500, meals:1200, education:3000, licenses:1200 },
-    profit: 285000, bizIncome: 285000, investIncome: 22000, rental: 0, age: 48,
-    filing: 'mfj', state: 'TX', miles: 22000, officeSqft: 300, homeSqft: 3000,
-    scorpProfit: 285000, scorpPct: 28, scorpOverhead: 4500,
-    retIncome: 285000, retAge: 48
-  },
-  3: {
-    name: 'Linda Park, APRN-NP', label: 'Scenario 3 — High Income, S-Corp, NY',
-    gross: 550000, expenses: { advertising:8500, vehicle:22000, insurance:12000, legal:8500, office:4200, homeoffice:1500, supplies:9500, phone:4800, travel:15000, meals:3200, education:6000, licenses:2400 },
-    profit: 485000, bizIncome: 485000, investIncome: 48000, rental: 72000, age: 55,
-    filing: 'single', state: 'NY', miles: 28000, officeSqft: 400, homeSqft: 4000,
-    scorpProfit: 485000, scorpPct: 32, scorpOverhead: 6500,
-    retIncome: 485000, retAge: 55
-  }
-};
-
-function loadScenario(n) {
-  const s = SCENARIOS[n];
-  if (!s) return;
-
-  // Update sidebar
-  const nameEl = document.getElementById('sidebar-client-name');
-  if (nameEl) nameEl.textContent = s.name;
-  const labelEl = document.getElementById('scenario-label');
-  if (labelEl) labelEl.textContent = s.label;
-
-  // Client profile
-  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
-  setVal('cp-name', s.name);
-  setVal('cp-age', s.age);
-  setVal('cp-filing', s.filing);
-  setVal('cp-state', s.state);
-  setVal('cp-biz-income', s.bizIncome);
-  setVal('cp-invest-income', s.investIncome);
-  setVal('cp-rental', s.rental);
-  setVal('cp-miles', s.miles);
-
-  // Schedule C
-  setVal('sc-gross', s.gross);
-  setVal('sc-advertising', s.expenses.advertising || 0);
-  setVal('sc-vehicle', s.expenses.vehicle || 0);
-  setVal('sc-insurance', s.expenses.insurance || 0);
-  setVal('sc-legal', s.expenses.legal || 0);
-  setVal('sc-office', s.expenses.office || 0);
-  setVal('sc-homeoffice', s.expenses.homeoffice || 0);
-  setVal('sc-supplies', s.expenses.supplies || 0);
-  setVal('sc-phone', s.expenses.phone || 0);
-  setVal('sc-travel', s.expenses.travel || 0);
-  setVal('sc-meals', s.expenses.meals || 0);
-  setVal('sc-education', s.expenses.education || 0);
-  setVal('sc-licenses', s.expenses.licenses || 0);
-  setVal('sc-returns', 0);
-  setVal('sc-cogs', 0);
-  setVal('sc-commissions', 0);
-  setVal('sc-contract', 0);
-  setVal('sc-other', 0);
-
-  // Home office
-  setVal('ho-office-sqft', s.officeSqft);
-  setVal('ho-home-sqft', s.homeSqft);
-
-  // Vehicle
-  setVal('veh-biz-miles', s.miles);
-
-  // S-Corp
-  setVal('sc2-profit', s.scorpProfit);
-  const slider = document.getElementById('sc2-salary-pct');
-  if (slider) slider.value = s.scorpPct;
-  setVal('sc2-overhead', s.scorpOverhead);
-
-  // Retirement
-  setVal('ret-income', s.retIncome);
-  setVal('ret-age', s.retAge);
-  setVal('ret-status', s.filing);
-
-  // Schedule A — seed AGI from the same estimate used on Client Profile
-  const agiForSA = typeof estimateClientAGI === 'function'
-    ? estimateClientAGI({ income: s.bizIncome, invest: s.investIncome, rental: s.rental })
-    : s.bizIncome + (s.investIncome || 0);
-  setVal('sa-agi', Math.round(agiForSA));
-  setVal('sa-filing', s.filing);
-  setVal('re-agi', Math.round(agiForSA));
-  setVal('tc-base-filing', s.filing);
-
-  // Recalculate everything (each isolated so one calculator's error can't block the rest)
-  try { calcScheduleC(); } catch (e) {}
-  try { calcHomeOffice(); } catch (e) {}
-  try { calcVehicle(); } catch (e) {}
-  try { calcScorp(); } catch (e) {}
-  try { calcRetirement(); } catch (e) {}
-  try { if (typeof calcScheduleA === 'function') calcScheduleA(); } catch (e) {}
-  try { if (typeof calcRealEstate === 'function') calcRealEstate(); } catch (e) {}
-  try { if (typeof calcInvestmentIncome === 'function') calcInvestmentIncome(); } catch (e) {}
-  try { if (typeof calcSchedule1 === 'function') calcSchedule1(); } catch (e) {}
-
-  // Show a brief toast
-  showToast('Loaded: ' + s.label);
-}
 
 function showToast(msg) {
   let toast = document.getElementById('scenario-toast');
@@ -4944,6 +4736,7 @@ document.addEventListener('DOMContentLoaded', () => {
   try { applyAllTabStylesOnLoad(); } catch (e) {}
 });
 </script>
+<script src="js/scenarios.js"></script>
 <script src="js/sections.js"></script>
 <script src="js/app.js"></script>
 <script src="js/trust-sections.js"></script>

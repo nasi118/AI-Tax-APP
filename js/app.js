@@ -107,11 +107,25 @@ function taxEngine(o){
 const fmt$ = n => '$' + Math.round(n).toLocaleString();
 
 // ---------- Clients ----------
-const DEMO_CLIENTS = [
-  {id:'s1',demo:1,name:'Sarah Mitchell, RN, MSN',occupation:'Mental Health Nurse Consultant',filing:'single',state:'CA',age:42,income:145000,invest:8500,rental:24000,miles:12000,entity:'Sole Proprietor'},
-  {id:'s2',demo:2,name:'James Rodriguez, MD',occupation:'Physician — Private Practice',filing:'mfj',state:'TX',age:48,income:285000,invest:22000,rental:0,miles:22000,entity:'Sole Prop → S-Corp candidate'},
-  {id:'s3',demo:3,name:'Linda Park, APRN-NP',occupation:'Nurse Practitioner',filing:'single',state:'NY',age:55,income:485000,invest:48000,rental:72000,miles:28000,entity:'S-Corporation'}
-];
+/* Demo clients are DERIVED from the scenario registry (js/scenarios.js) so
+   there is exactly one place to add a scenario. Each built-in scenario becomes
+   a selectable client in the switcher automatically. The legacy `demo` ordinal
+   is kept for the first three so any older saved state still resolves. */
+const DEMO_CLIENTS = (typeof BUILT_IN_SCENARIOS !== 'undefined' ? BUILT_IN_SCENARIOS : []).map((s, i) => ({
+  id: s.id,
+  demo: i + 1,
+  scenarioId: s.id,
+  name: s.name,
+  occupation: s.profession,
+  filing: s.filingStatus,
+  state: s.state,
+  age: s.age,
+  income: (s.business && s.business.netIncome) || 0,
+  invest: (s.otherIncome && s.otherIncome.investment) || 0,
+  rental: (s.otherIncome && s.otherIncome.rental) || 0,
+  miles: (s.vehicle && s.vehicle.businessMiles) || 0,
+  entity: s.entityLabel
+}));
 function customClients(){ try{ return JSON.parse(localStorage.getItem('tap-clients')||'[]'); }catch(e){ return []; } }
 function clientOverrides(){ try{ return JSON.parse(localStorage.getItem('tap-overrides')||'{}'); }catch(e){ return {}; } }
 function allClients(){
@@ -128,20 +142,20 @@ function renderSwitcher(){
   sel.value = activeClientId();
 }
 
-const _origLoadScenario = typeof loadScenario === 'function' ? loadScenario : null;
-loadScenario = function(n){
-  if(_origLoadScenario) _origLoadScenario(n);
-  localStorage.setItem('tap-active-client', 's'+n);
-  if(clientOverrides()['s'+n]) applyCustomClient(activeClient());
-  refreshClientViews();
-};
-
+/* loadScenario() lives in js/scenarios.js and already syncs the active client
+   and refreshes every client-driven view, so it is not wrapped here. A client
+   carrying a user override still gets that override applied on top. */
 function switchClient(id){
   const c = allClients().find(x => x.id === id);
   if(!c) return;
   localStorage.setItem('tap-active-client', id);
-  if(c.demo){ if(_origLoadScenario) _origLoadScenario(c.demo); if(clientOverrides()[c.id]) applyCustomClient(c); }
-  else applyCustomClient(c);
+  const isBuiltIn = typeof getScenario === 'function' && !!getScenario(id);
+  if(isBuiltIn){
+    loadScenario(id);
+    if(clientOverrides()[c.id]) applyCustomClient(c);
+  } else {
+    applyCustomClient(c);
+  }
   refreshClientViews();
 }
 
@@ -620,6 +634,18 @@ function magiPlanningRows(magi, filing){
 }
 
 let chartRptComp, chartRptBrackets, chartRptSchedA, chartRptInvest, chartRptNiit;
+/* Name the scenario the report was generated against, so a printed report is
+   self-identifying. Falls back to the active client when no registry scenario
+   is loaded (e.g. a hand-entered client). */
+function reportScenarioLabel(){
+  try {
+    const s = typeof activeScenario === 'function' ? activeScenario() : null;
+    if(s) return s.name + (s.source === 'custom' ? ' (saved scenario)' : '');
+  } catch(e) {}
+  const c = activeClient();
+  return c && c.name ? c.name : 'Base';
+}
+
 function renderReport(){
   const host = document.getElementById('report-body');
   if(!host) return;
@@ -660,7 +686,7 @@ function renderReport(){
 
   host.innerHTML = `
 <div class="flex items-start justify-between pb-5 mb-6" style="border-bottom:3px solid #0b1526;">
-<div><div class="text-xl font-extrabold" style="color:#0b1526;">${c.name} — 2026 Tax Report</div><div class="text-xs text-slate-500 mt-0.5">| ${REPORT_FIRM_EMAIL} &nbsp;·&nbsp; Prepared ${today} &nbsp;·&nbsp; Scenario: Base</div></div>
+<div><div class="text-xl font-extrabold" style="color:#0b1526;">${c.name} — 2026 Tax Report</div><div class="text-xs text-slate-500 mt-0.5">| ${REPORT_FIRM_EMAIL} &nbsp;·&nbsp; Prepared ${today} &nbsp;·&nbsp; Scenario: ${reportScenarioLabel()}</div></div>
 <div class="text-right text-xs text-slate-500"><div class="font-bold text-slate-800 text-sm">${c.name}</div><div>${c.occupation||''}</div><div>${filingLabel} · ${STATE_NAMES[c.state]||c.state} · Age ${c.age}</div></div>
 </div>
 ${opts.keyfigures?`
@@ -1028,8 +1054,15 @@ document.addEventListener('DOMContentLoaded', () => {
   fillStateSelect(document.getElementById('wi-state'), 'CA');
   fillStateSelect(document.getElementById('st-state'), 'CA');
   fillStateSelect(document.getElementById('nc-state'), 'CA');
+  /* Restore the last active client. Built-in scenarios go through the registry
+     loader; the first scenario is already the markup's default, so it only
+     needs loading when a user override exists. */
   const act = activeClient();
-  if(act.demo && act.demo !== 1 && _origLoadScenario) _origLoadScenario(act.demo);
-  else if(!act.demo) applyCustomClient(act);
+  const isBuiltIn = typeof getScenario === 'function' && !!getScenario(act.id);
+  if(isBuiltIn){
+    if(act.id !== DEMO_CLIENTS[0].id || clientOverrides()[act.id]) loadScenario(act.id);
+  } else {
+    applyCustomClient(act);
+  }
   refreshClientViews();
 });

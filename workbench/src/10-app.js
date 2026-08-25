@@ -976,6 +976,23 @@ function App() {
     });
     setScenarios(sc => [...sc, c]);
   };
+  /* "Add Scenario" (Planning Scenarios menu): clone the given source scenario
+     (defaults to the currently active one) into a new, independent planning
+     scenario. Reuses the same deepClone + setScenarios + audit-log path as
+     every other scenario-creating action — there is no separate store. */
+  const addPlanningScenario = sourceId => {
+    const src = scenarios.find(s => s.id === sourceId) || active || scenarios[0];
+    const c = deepClone(src, src.name + " — planning copy");
+    logEvent({
+      label: "Planning scenario added",
+      kind: "structure",
+      scenarioName: c.name,
+      from: src.name,
+      to: c.name
+    });
+    setScenarios(sc => [...sc, c]);
+    return c.id;
+  };
   const duplicate = id => {
     const src = scenarios.find(s => s.id === id);
     const c = deepClone(src);
@@ -1378,7 +1395,8 @@ function App() {
           onAskAI: askWorkspace,
           client: clientSafe, alignments,
           scenarios, results, bestId, baseline, status, year,
-          update, addScenario, duplicate, remove, reset
+          update, addScenario, duplicate, remove, reset,
+          activeId: activeIdSafe, onAddPlanningScenario: addPlanningScenario
         }),
         tab === "se" && EL(SEModule, { scenario: active, result: activeResult, status, year, update: updateActive }),
         tab === "magi" && EL(MAGIModule, { scenario: active, result: activeResult, status, year, update: updateActive }),

@@ -128,7 +128,10 @@
     openDrawer: null,
     detailLineKey: null,
     openModal: null,
-    compareSelection: []
+    compareSelection: [],
+    /* True until a saved project is hydrated or the user edits something —
+       it marks the untouched demo data, which a host import may replace. */
+    bootedFromDemo: true
   };
 
   /* transient (non-persisted) UI state that must survive re-renders */
@@ -147,6 +150,7 @@
       try {
         state.project = Engine.parseProject(raw);
         state.lastSavedAt = state.project.updatedAt;
+        state.bootedFromDemo = false;
       } catch (e) { /* fall back to demo */ }
     }
     state.result = computeForProject(state.project);
@@ -154,6 +158,8 @@
 
   function persist(project) {
     storage.set(STORAGE_KEY, Engine.serializeProject(project));
+    /* Anything saved is the user's project now, not untouched demo data. */
+    state.bootedFromDemo = false;
   }
 
   function pushHistory(previousProject) {
@@ -2626,6 +2632,138 @@
     if (state.openDrawer) setDrawer(null);
   });
 
+  /* ---- host bridge ---------------------------------------------------------
+     The planner is embedded by the Scenarios tab of the main application. The
+     host pushes scenarios in (mapped from its scenario library) and reads the
+     engine-computed results back out; the engine here stays the single source
+     of truth for every number, exactly as it is standalone.
+
+     Scenarios the host pushes carry `hostId`. A re-import replaces only those,
+     so anything the user built inside the planner survives untouched.
+     ------------------------------------------------------------------------ */
+  function scenarioSummary(scenario) {
+    var result = Engine.computeProjection(scenario.inputs);
+    return {
+      id: scenario.id,
+      hostId: scenario.hostId || null,
+      name: scenario.name,
+      description: scenario.description || '',
+      isBaseline: !!scenario.isBaseline,
+      isActive: scenario.id === state.project.activeScenarioId,
+      totalIncome: result.totalIncome,
+      agi: result.agi,
+      taxableIncome: result.taxableIncome,
+      deductionUsed: result.deductionUsed,
+      qbiDeduction: result.qbiDeduction,
+      seTax: result.seTax,
+      totalTax: result.totalTax,
+      effectiveRate: result.effectiveRate,
+      marginalRate: result.marginalRate,
+      balanceDue: result.balanceDue,
+      refund: result.refund
+    };
+  }
+
+  function projectSummaries() {
+    return state.project.scenarios.map(scenarioSummary);
+  }
+
+  /* Replace every previously host-imported scenario with `list`, keeping the
+     planner's own scenarios in place. Returns the resulting summaries. */
+  function importHostScenarios(list, opts) {
+    opts = opts || {};
+    if (!Array.isArray(list)) throw new Error('importHostScenarios expects an array.');
+    var prev = state.project;
+    /* On a first import into untouched demo data, the demo scenarios step
+       aside so the tab opens on the host's own scenarios. Once the user has
+       saved or edited anything in the planner, their scenarios are kept and
+       only previously imported ones are refreshed. */
+    var native = state.bootedFromDemo
+      ? []
+      : prev.scenarios.filter(function (s) { return !s.hostId; });
+    var imported = list.map(function (entry, i) {
+      if (!entry || typeof entry !== 'object') throw new Error('Scenario ' + i + ' is not an object.');
+      return Engine.createScenario(
+        String(entry.name || 'Scenario ' + (i + 1)),
+        Engine.parseInputs(entry.inputs),
+        {
+          description: entry.description != null ? String(entry.description) : '',
+          hostId: entry.hostId != null ? entry.hostId : entry.id,
+          /* The first imported scenario is the comparison baseline whenever the
+             planner has nothing of its own to anchor against. */
+          isBaseline: i === 0 && native.length === 0
+        }
+      );
+    });
+    var scenarios = native.concat(imported);
+    if (!scenarios.length) return projectSummaries();
+
+    /* Keep the active scenario if it survived; otherwise prefer the first
+       import so the planner opens on what the host just sent. */
+    var activeId = scenarios.some(function (s) { return s.id === prev.activeScenarioId; })
+      ? prev.activeScenarioId
+      : (imported[0] || scenarios[0]).id;
+    if (opts.activateFirstImport && imported[0]) activeId = imported[0].id;
+
+    state.project = Object.assign({}, prev, {
+      scenarios: scenarios,
+      activeScenarioId: activeId,
+      updatedAt: new Date().toISOString()
+    });
+    persist(state.project);
+    state.result = computeForProject(state.project);
+    pushHistory(prev);
+    state.lastSavedAt = state.project.updatedAt;
+    /* Pre-select the imported set for the comparison modal (it takes 2–4). */
+    if (imported.length >= 2) state.compareSelection = imported.slice(0, 4).map(function (s) { return s.id; });
+    if (opts.tab) state.activeTab = opts.tab;
+    render();
+    return projectSummaries();
+  }
+
+  function postToHost(type, payload) {
+    if (window.parent === window) return;
+    try {
+      window.parent.postMessage(Object.assign({ source: 'tax-planner-1040', type: type }, payload || {}), '*');
+    } catch (e) { /* the host may be cross-origin; the direct API still works */ }
+  }
+
+  window.TaxPlannerHost = {
+    version: 1,
+    importScenarios: function (list, opts) {
+      var summaries = importHostScenarios(list, opts);
+      postToHost('summaries', { summaries: summaries });
+      return summaries;
+    },
+    summaries: projectSummaries,
+    setTab: function (tab) {
+      if (['planner', 'report', 'scenarios', 'coverage'].indexOf(tab) === -1) return;
+      setTab(tab);
+    },
+    activeTab: function () { return state.activeTab; },
+    scenarioCount: function () { return state.project.scenarios.length; }
+  };
+
+  /* Same-origin hosts call window.TaxPlannerHost directly; postMessage is the
+     fallback path and keeps the contract usable if the frame ever moves to a
+     different origin. Only messages that name this bridge are acted on. */
+  window.addEventListener('message', function (e) {
+    var msg = e.data;
+    if (!msg || typeof msg !== 'object' || msg.source !== 'tax-planner-host') return;
+    try {
+      if (msg.type === 'import-scenarios') {
+        postToHost('summaries', { summaries: importHostScenarios(msg.scenarios, msg.options) });
+      } else if (msg.type === 'request-summaries') {
+        postToHost('summaries', { summaries: projectSummaries() });
+      } else if (msg.type === 'set-tab') {
+        window.TaxPlannerHost.setTab(msg.tab);
+      }
+    } catch (err) {
+      postToHost('error', { message: String(err && err.message ? err.message : err) });
+    }
+  });
+
   hydrate();
   render();
+  postToHost('ready', { summaries: projectSummaries() });
 })();

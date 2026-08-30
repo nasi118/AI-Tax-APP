@@ -715,6 +715,7 @@ function loadScenario(ref) {
   try { localStorage.setItem('tap-active-client', s.id); } catch (e) {}
   try { if (typeof refreshClientViews === 'function') refreshClientViews(); } catch (e) {}
   try { renderScenarioLibrary(); } catch (e) {}
+  try { if (typeof sendScenariosToPlanner === 'function') sendScenariosToPlanner(); } catch (e) {}
 
   if (typeof showToast === 'function') showToast('Loaded: ' + s.shortLabel);
   return s;
@@ -841,27 +842,6 @@ const SCENARIO_TAGS = [
   ['w2PlusSchedC', 'W-2 + Sch C'],
   ['custom', 'My scenarios']
 ];
-/* Rows for the comparison table: label + how to read it off a scenario. */
-const SCENARIO_COMPARE_ROWS = [
-  ['Profession',          s => s.profession || '—'],
-  ['Entity',              s => s.entityLabel],
-  ['Filing status',       s => ({ single: 'Single', mfj: 'Married filing jointly', mfs: 'Married filing separately', hoh: 'Head of household' })[s.filingStatus] || s.filingStatus],
-  ['State',               s => s.state],
-  ['Age',                 s => s.age],
-  ['Gross revenue',       s => money(s.business.grossRevenue)],
-  ['Net business income', s => money(s.business.netIncome)],
-  ['W-2 wages (other)',   s => s.otherIncome.w2Wages ? money(s.otherIncome.w2Wages) : '—'],
-  ['Investment income',   s => money(s.otherIncome.investment)],
-  ['Rental income',       s => s.otherIncome.rental ? money(s.otherIncome.rental) : '—'],
-  ['SSTB',                s => s.business.sstb ? 'Yes' : 'No'],
-  ['W-2 wages paid',      s => s.business.w2WagesPaid ? money(s.business.w2WagesPaid) : '—'],
-  ['Business miles',      s => s.vehicle.businessMiles ? s.vehicle.businessMiles.toLocaleString() + '/yr' : '—'],
-  ['Reasonable comp',     s => s.entityType === 'scorp'
-                              ? money(s.compensation.reasonableComp) + ' (' + s.compensation.reasonableCompPct + '% of profit)'
-                              : '—'],
-  ['Retirement plan',     s => s.retirement.currentPlan],
-  ['Key tax issues',      s => (s.keyIssues[0] || '—')]
-];
 function money(v) { return '$' + Math.round(num(v, 0)).toLocaleString(); }
 function esc(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
@@ -889,6 +869,9 @@ function toggleComparison(id) {
   sel = sel.includes(id) ? sel.filter(x => x !== id) : sel.concat([id]);
   try { localStorage.setItem('tap-scenario-compare', JSON.stringify(sel)); } catch (e) {}
   renderScenarioLibrary();
+  /* Push the new selection through the 1040 Planner so the comparison the tab
+     shows is the engine's, not a restatement of the scenario record. */
+  if (typeof sendScenariosToPlanner === 'function') sendScenariosToPlanner();
 }
 function setScenarioFilter(tag) { SCENARIO_FILTER.tag = tag; renderScenarioLibrary(); }
 function setScenarioQuery(q) { SCENARIO_FILTER.q = q; renderScenarioLibrary(); }
@@ -963,19 +946,10 @@ function renderScenarioLibrary() {
     ? shown.map(scenarioCard).join('')
     : '<div class="col-span-full text-sm text-slate-500 p-6 text-center">No scenarios match this filter.</div>';
 
-  /* Comparison table — one column per selected scenario, scrolls horizontally. */
-  const cmp = document.getElementById('scenario-compare');
-  if (cmp) {
-    const sel = comparisonSelection().map(id => all.find(s => s.id === id)).filter(Boolean);
-    cmp.innerHTML = !sel.length
-      ? '<p class="text-sm text-slate-500">Tick "Include in comparison" on any scenario card to build a side-by-side table.</p>'
-      : '<div class="overflow-x-auto"><table class="ttable"><thead><tr><th class="whitespace-nowrap">Attribute</th>' +
-        sel.map(s => '<th class="whitespace-nowrap">' + esc(s.name) + '</th>').join('') + '</tr></thead><tbody>' +
-        SCENARIO_COMPARE_ROWS.map(([label, get]) =>
-          '<tr><td class="font-semibold text-slate-600 whitespace-nowrap">' + esc(label) + '</td>' +
-          sel.map(s => { let v; try { v = get(s); } catch (e) { v = '—'; } return '<td>' + esc(v) + '</td>'; }).join('') + '</tr>'
-        ).join('') + '</tbody></table></div>';
-  }
+  /* The side-by-side attribute table that used to live here was replaced by
+     the 1040 Planner module: the comparison is now computed by the planner's
+     TY2026 engine from the same selection. js/planner-bridge.js renders it. */
+  if (typeof renderPlannerComparison === 'function') renderPlannerComparison();
 }
 
 function promptRenameScenario(id) {

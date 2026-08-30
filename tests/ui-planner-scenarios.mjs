@@ -41,8 +41,23 @@ ok(await p.evaluate(() => !document.getElementById('scenarios-frame').getAttribu
 
 await p.evaluate(() => showSection('scenarios'));
 await p.waitForTimeout(3000);
-ok(await p.evaluate(() => document.getElementById('scenarios-frame').getAttribute('src')) === "planner/index.html",
-   "opening the tab loads the planner");
+/* The src MUST be the directory URL. With an explicit "planner/index.html" a
+   static host (Vercel included) rewrites it to an extensionless "/planner",
+   the browser then resolves the planner's relative script paths against the
+   site root, the frame loads THIS app's js/app.js instead of the module's own
+   scripts, and the tab comes up blank. That failure does not reproduce on a
+   dev server that serves the explicit path verbatim, so assert the shape of
+   the URL as well as the health of the frame. */
+ok(await p.evaluate(() => document.getElementById('scenarios-frame').getAttribute('src')) === "planner/",
+   "the frame uses the directory URL, so the module's relative assets resolve");
+ok(await p.evaluate(() => {
+  const d = document.getElementById('scenarios-frame').contentDocument;
+  return !!(d && d.getElementById('app') && d.getElementById('app').children.length);
+}), "the planner document actually rendered inside the frame");
+ok(await p.evaluate(() => {
+  const fr = document.getElementById('scenarios-frame').contentWindow;
+  return typeof fr.TaxEngine === "object" && typeof fr.TaxEngine.PARAMS.socialSecurityWageBase === "number";
+}), "the frame booted the planner's own engine, not the host's scripts");
 ok(await p.evaluate(() => document.getElementById('page-title').textContent).then(t => t.includes("1040 Planner")),
    "page title names the module");
 

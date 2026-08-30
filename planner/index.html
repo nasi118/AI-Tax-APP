@@ -20,6 +20,12 @@
 <script src="vendor/tailwindcss.js"></script>
 <script src="vendor/decimal.js"></script>
 <script>
+/* Guarded because this page is also embedded in an iframe (the Scenarios
+   tab). Navigating away mid-load aborts the vendored Tailwind script above
+   while this one still runs, and an unguarded `tailwind.config` would then
+   throw a ReferenceError into the host page. The palette is a refinement, so
+   skipping it on an aborted load costs nothing. */
+if (typeof tailwind !== 'undefined') {
 tailwind.config = {
   theme: {
     extend: {
@@ -30,6 +36,7 @@ tailwind.config = {
     }
   }
 };
+}
 </script>
 <style>
 html { -webkit-text-size-adjust: 100%; }

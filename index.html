@@ -3059,7 +3059,7 @@ body.tap-col-dragging{cursor:col-resize!important;user-select:none}
      SECTION: SCENARIOS — 1040 Planner (TY2026) + Scenario Library
      The 1040 Planner module lives here: it replaced the static
      side-by-side attribute table this tab used to show. The planner
-     app (planner/index.html) runs in an iframe, lazy-loaded on first
+     app (planner/) runs in an iframe, lazy-loaded on first
      open, and is also available standalone at planner/. The library
      view keeps the scenario registry that feeds every other tab, and
      pushes the ticked scenarios into the planner’s engine
@@ -3083,7 +3083,7 @@ body.tap-col-dragging{cursor:col-resize!important;user-select:none}
         <button type="button" onclick="sendScenariosToPlanner({ tab: 'scenarios', activateFirstImport: true })"
                 title="Map the scenarios ticked in the library into the planner and recompute them"
                 class="px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50">Model selection in planner</button>
-        <a href="planner/index.html" target="_blank" rel="noopener"
+        <a href="planner/" target="_blank" rel="noopener"
            class="px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50" style="text-decoration:none">Open standalone ↗</a>
       </div>
     </div>
@@ -3222,7 +3222,13 @@ function showSection(id) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   const sec = document.getElementById('section-' + id);
   if (sec) sec.classList.add('active');
-  const embeddedApps = { 'scenarios': 'planner/index.html', 'workbench': 'workbench/index.html' };
+  /* Directory URLs, never the explicit "…/index.html". Static hosts (Vercel
+     included) rewrite an explicit index path to an extensionless "/planner",
+     and the browser then resolves that document's RELATIVE script paths
+     against the site root — so the frame silently loads this host app's
+     js/app.js instead of the module's own scripts and comes up blank. A
+     trailing slash keeps the base correct. */
+  const embeddedApps = { 'scenarios': 'planner/', 'workbench': 'workbench/' };
   /* Full-bleed sections live outside the padded wrapper; leaving the wrapper in
      flow would push them down by its own vertical padding. */
   const padded = document.getElementById('padded-sections');

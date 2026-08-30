@@ -4,7 +4,7 @@
 
    The Scenarios tab hosts the 1040 Planner (TY2026) module, which replaced the
    static side-by-side attribute table that used to live here. The planner runs
-   in an iframe (planner/index.html) and owns every calculation: this file only
+   in an iframe (planner/) and owns every calculation: this file only
    translates scenario FACTS from the library registry (js/scenarios.js) into
    the planner's input schema, pushes them across, and renders the numbers the
    planner's engine sends back.
@@ -42,7 +42,11 @@ const PLANNER_PARAM_FALLBACK = {
 };
 
 const PLANNER_FRAME_ID = 'scenarios-frame';
-const PLANNER_FRAME_SRC = 'planner/index.html';
+/* The directory URL, not 'planner/index.html' — see the note on embeddedApps
+   in index.html. An explicit index path is rewritten to an extensionless
+   '/planner' by static hosts, after which the module's relative scripts
+   resolve against the site root and the frame comes up blank. */
+const PLANNER_FRAME_SRC = 'planner/';
 
 /* Live engine-computed summaries, most recently received from the planner. */
 let PLANNER_SUMMARIES = [];

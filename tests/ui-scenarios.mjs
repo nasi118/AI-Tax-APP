@@ -28,9 +28,11 @@ ok(n === 11, "registry holds 11 built-in scenarios (got " + n + ")");
 ok(await p.evaluate(() => DEMO_CLIENTS.length) === 11, "client switcher derives all scenarios");
 ok(await p.evaluate(() => document.querySelectorAll('#client-switcher option').length) === 11, "switcher renders 11 options");
 
-// library UI
+// library UI — the tab now opens on the 1040 Planner, so switch to the library view
 await p.evaluate(() => showSection('scenarios'));
 await p.waitForTimeout(400);
+await p.evaluate(() => showScenarioView('library'));
+await p.waitForTimeout(200);
 const cards = await p.locator("#scenario-grid > div.card").count();
 ok(cards === 11, "library grid renders every scenario (" + cards + ")");
 ok((await p.locator("#scenario-count").textContent()).includes("11 of 11"), "count reads 11 of 11");
@@ -46,11 +48,18 @@ const sc = await p.locator("#scenario-grid > div.card").count();
 ok(sc === 4, "S-Corp filter returns the 4 S-Corp scenarios (" + sc + ")");
 await p.evaluate(() => setScenarioFilter('all'));
 
-// comparison table beyond 3 columns
+// comparison is now computed by the embedded 1040 Planner, not read off the record
+await p.evaluate(() => showScenarioView('planner'));
+await p.waitForTimeout(2500); // the planner iframe boots and runs its engine
 await p.evaluate(() => { ['s4','s5'].forEach(toggleComparison); });
-await p.waitForTimeout(300);
+await p.waitForTimeout(1200);
 const cols = await p.locator("#scenario-compare thead th").count();
-ok(cols === 6, "comparison handles more than 3 scenarios (" + cols + " cols incl. label)");
+ok(cols === 5, "engine comparison renders a column per modeled scenario (" + cols + " incl. label)");
+const modeled = await p.evaluate(() => PLANNER_SUMMARIES.length);
+ok(modeled === 4, "planner modeled the four ticked scenarios (" + modeled + ")");
+ok(await p.evaluate(() => PLANNER_SUMMARIES.every(s => s.totalTax > 0)), "every modeled scenario has an engine-computed total tax");
+await p.evaluate(() => showScenarioView('library'));
+await p.waitForTimeout(200);
 
 // load a new scenario -> inputs + dashboard update
 const kpiBefore = await p.evaluate(() => document.querySelector('#section-dashboard .kpi-value').textContent);
@@ -115,6 +124,7 @@ const merr = []; m.on("pageerror", e => merr.push(String(e)));
 await m.goto(BASE + "/", { waitUntil: "domcontentloaded" });
 await m.waitForTimeout(2000);
 await m.evaluate(() => showSection('scenarios'));
+await m.evaluate(() => showScenarioView('library'));
 await m.waitForTimeout(300);
 ok(await m.locator("#scenario-grid > div.card").first().isVisible(), "mobile: scenario cards render");
 ok(merr.length === 0, "mobile: no page errors");

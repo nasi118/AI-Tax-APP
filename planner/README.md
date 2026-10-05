@@ -3,9 +3,15 @@
 A Form 1040 planning workbench for tax year 2026, rebuilt as clean,
 dependency-vendored static source from the compiled reference app
 (`Tax_Planner___Individual_1040_TY2026`). No build step: serve this directory
-(or the repo root) statically and open `index.html`. It is embedded in the
-main Tax Advisory Pro app as the "1040 Planner (TY2026)" section (Planning
-nav group) and also works standalone at this path.
+(or the repo root) statically and open `index.html`. It is the module the
+main app's **Scenarios** tab opens on — where it replaced that tab's static
+side-by-side attribute table — and it also works standalone at this path.
+
+When embedded, the host pushes scenarios in from its library through
+`window.TaxPlannerHost` (see `js/planner-bridge.js` at the repo root) and
+reads the engine's results back. Imported scenarios carry a `hostId`;
+scenarios created here have none, and a host re-import replaces only the
+imported ones.
 
 ## What it does
 

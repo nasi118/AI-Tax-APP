@@ -19,9 +19,12 @@ Then visit `http://localhost:8080/`.
 
 - `index.html` — app shell, layout, styles, and the core dashboard/client-profile logic
 - `planner/` — **Tax Planner — Individual 1040 (TY2026)** workbench (own
-  engine, UI, and vendored libraries — see `planner/README.md`). Embedded in
-  the main app as the "1040 Planner (TY2026)" section in the Planning nav
-  group, and also usable standalone at `planner/`.
+  engine, UI, and vendored libraries — see `planner/README.md`). It is the
+  module the **Scenarios** tab opens on, where it replaced that tab's static
+  side-by-side attribute table, and it is also usable standalone at
+  `planner/`. `js/planner-bridge.js` maps scenario facts from the library
+  into the planner's input schema and reads the engine's results back; the
+  planner's engine computes every figure the tab shows.
 - `workbench/` — **Individual Planning Workbench (TY2025/TY2026)**, imported
   from [`nasi118/AI-Tax`](https://github.com/nasi118/AI-Tax): a React 18
   (vendored UMD, no build step) multi-scenario planning app — SE and
@@ -42,11 +45,19 @@ Then visit `http://localhost:8080/`.
   scenario library, the loader, custom (user-saved) scenarios, and the library
   UI. To add a new built-in scenario, append one object to
   `BUILT_IN_SCENARIOS` — nothing else needs to change. The client switcher,
-  the library grid, the comparison table, the dashboard, the Client Report and
-  the recalculation service all read from that array. Only `id`, `name` and
+  the library grid, the 1040 Planner comparison, the dashboard, the Client
+  Report and the recalculation service all read from that array. Only `id`, `name` and
   `business.netIncome` are required; every other field is defaulted by
   `normalizeScenario()`. Map a new calculator input by adding one row to
   `SCENARIO_FIELD_MAP` rather than writing another assignment.
+- `js/planner-bridge.js` — the **Scenarios tab ↔ 1040 Planner bridge**. Maps a
+  registry scenario's facts onto the planner's input schema (Schedule C for a
+  sole proprietor; W-2 reasonable compensation plus K-1 ordinary income for an
+  S-Corporation, with SSTB status and W-2/UBIA facts carried into §199A),
+  pushes the selection into the frame, and renders the engine's results. It
+  computes no tax of its own, and records every modeling assumption it makes on
+  the scenario it sends. Scenarios it pushes carry a `hostId`, so re-importing
+  never disturbs scenarios the user built inside the planner.
 - `js/sections.js` / `js/app.js` — additional planning sections (clients, what-if planner, quarterly payments, documents, deadlines, state tax, client report) and their markup
 - `js/trust-sections.js` / `js/trust-app.js` — the Trusts & Estates module (trust classification, Form 1041, GST, fiduciary reference) and its markup
 

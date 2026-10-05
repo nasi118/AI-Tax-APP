@@ -421,7 +421,22 @@
         }),
         line('otherIncome.other', 'Other income', other, { citation: 'IRC §61(a)' })
       ], { total: total }),
-      extra: { k1OrdinaryIncome: k1Ordinary, taxableSocialSecurity: taxableSS }
+      extra: {
+        k1OrdinaryIncome: k1Ordinary,
+        /* Per-entry K-1 facts so §199A can apply the SSTB test and the
+           W-2 wage / UBIA limits to each passthrough separately, instead of
+           treating the whole K-1 total as one non-SSTB component. */
+        k1Entries: items.filter(function (i) { return i.kind === 'k1Ordinary'; }).map(function (i) {
+          return {
+            id: i.id, name: i.description || 'K-1 ordinary income', amount: i.amount,
+            isSSTB: i.isSSTB === true,
+            w2Wages: typeof i.w2Wages === 'number' ? i.w2Wages : 0,
+            ubia: typeof i.ubia === 'number' ? i.ubia : 0,
+            isQualifiedTradeOrBusiness: i.isQualifiedTradeOrBusiness !== false
+          };
+        }),
+        taxableSocialSecurity: taxableSS
+      }
     };
   }
 
@@ -608,16 +623,31 @@
     };
   }
 
-  function collectQbiComponents(businessComponents, rentalComponents, k1Ordinary) {
+  function collectQbiComponents(businessComponents, rentalComponents, k1Ordinary, k1Entries) {
     var fromBusinesses = businessComponents.filter(function (c) { return c.materialParticipation; }).map(function (c) {
       return { id: c.id, name: c.name, qbi: c.netIncome, isSSTB: c.isSSTB, w2Wages: c.w2Wages, ubia: c.unadjustedBasis };
     });
     var fromRentals = rentalComponents.filter(function (c) { return c.isQualifiedTradeOrBusiness; }).map(function (c) {
       return { id: c.id, name: c.name, qbi: c.netIncome, isSSTB: false, w2Wages: 0, ubia: 0 };
     });
-    var fromK1 = k1Ordinary !== 0
-      ? [{ id: 'k1-ordinary', name: 'K-1 ordinary income', qbi: k1Ordinary, isSSTB: false, w2Wages: 0, ubia: 0 }]
-      : [];
+    /* One component per K-1 entry when the caller supplied them, so each
+       passthrough carries its own SSTB status and W-2/UBIA limits. Falls back
+       to the single lumped, non-SSTB component for callers that don't. */
+    var fromK1;
+    if (Array.isArray(k1Entries) && k1Entries.length) {
+      fromK1 = k1Entries
+        .filter(function (e) { return e.isQualifiedTradeOrBusiness !== false && e.amount !== 0; })
+        .map(function (e, i) {
+          return {
+            id: e.id || ('k1-ordinary-' + i), name: e.name || 'K-1 ordinary income', qbi: e.amount,
+            isSSTB: e.isSSTB === true, w2Wages: e.w2Wages || 0, ubia: e.ubia || 0
+          };
+        });
+    } else {
+      fromK1 = k1Ordinary !== 0
+        ? [{ id: 'k1-ordinary', name: 'K-1 ordinary income', qbi: k1Ordinary, isSSTB: false, w2Wages: 0, ubia: 0 }]
+        : [];
+    }
     return fromBusinesses.concat(fromRentals, fromK1);
   }
 
@@ -925,11 +955,12 @@
     var taxExemptInterest = taxExemptLine ? taxExemptLine.amount : 0;
     var incomeBeforeOther = round2(wagesModule.total + intDivModule.total + businessModule.total + rentalModule.total);
 
-    var otherModule, k1Ordinary = 0;
+    var otherModule, k1Ordinary = 0, k1Entries = [];
     try {
       var other = computeOtherIncome(inputs, incomeBeforeOther, taxExemptInterest);
       otherModule = other.result;
       k1Ordinary = other.extra.k1OrdinaryIncome;
+      k1Entries = other.extra.k1Entries || [];
     } catch (e) { otherModule = errorModule(MOD_OTHER, 'Other Income', e); }
     modules[MOD_OTHER] = otherModule;
 
@@ -980,7 +1011,7 @@
     var qualifiedDividends = qualifiedLine ? qualifiedLine.amount : 0;
     var taxableIncomeBeforeQbi = round2(Math.max(agi - deductionUsed, 0));
 
-    var qbiComponents = collectQbiComponents(businessQbiComponents, rentalQbiComponents, k1Ordinary);
+    var qbiComponents = collectQbiComponents(businessQbiComponents, rentalQbiComponents, k1Ordinary, k1Entries);
     var qbiModule, qbiDeduction = 0;
     try {
       var qbi = computeQbi(inputs, qbiComponents, taxableIncomeBeforeQbi, netCapitalGain);
@@ -1114,7 +1145,11 @@
       inputs: inputs,
       createdAt: now,
       updatedAt: now,
-      isBaseline: opts.isBaseline != null && opts.isBaseline
+      isBaseline: opts.isBaseline != null && opts.isBaseline,
+      /* Set when the host application (the Scenarios tab) pushed this scenario
+         in from its library. Scenarios created inside the planner leave it
+         null, which is what keeps a host re-import from touching them. */
+      hostId: opts.hostId != null ? String(opts.hostId) : null
     };
   }
 
@@ -1128,7 +1163,9 @@
       inputs: JSON.parse(JSON.stringify(scenario.inputs)),
       createdAt: now,
       updatedAt: now,
-      isBaseline: false
+      isBaseline: false,
+      /* A duplicate is the user's own working copy, never a host mirror. */
+      hostId: null
     };
   }
 
@@ -1416,7 +1453,8 @@
       inputs: normalizeInputs(raw.inputs),
       createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : new Date().toISOString(),
       updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : new Date().toISOString(),
-      isBaseline: typeof raw.isBaseline === 'boolean' && raw.isBaseline
+      isBaseline: typeof raw.isBaseline === 'boolean' && raw.isBaseline,
+      hostId: typeof raw.hostId === 'string' && raw.hostId ? raw.hostId : null
     };
   }
 
@@ -1498,6 +1536,9 @@
     compareScenarios: compareScenarios,
     createDemoProject: createDemoProject,
     emptyInputs: emptyInputs,
+    /* Validate/normalize a raw inputs object (fills defaults, rejects junk).
+       Used by the host bridge to accept scenarios pushed in from outside. */
+    parseInputs: normalizeInputs,
     serializeProject: serializeProject,
     parseProject: parseProject,
     uuid: uuid,

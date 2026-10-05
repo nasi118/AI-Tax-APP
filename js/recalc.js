@@ -6,9 +6,11 @@
    second calculation engine is introduced. Failures are isolated per module,
    every run is recorded, and the identity strip stays visible on every tab.
 
-   The embedded Planning Workbench and 1040 Planner run their own canonical
-   recalculation service inside their frames (with the same scope model);
-   this service reports that rather than duplicating it.
+   The embedded Planning Workbench runs its own canonical recalculation
+   service inside its frame (with the same scope model); this service reports
+   that rather than duplicating it. The 1040 Planner is embedded in the
+   Scenarios tab and recomputes through its own engine when the tab's module
+   re-pushes the scenario selection.
    ========================================================================== */
 
 /* Module registry. `fns` are resolved by name at run time so load order does
@@ -37,10 +39,14 @@ const RECALC_MODULES = [
   { id: "form-1041", label: "Form 1041", fns: ["calc1041"] },
   { id: "gst", label: "GST Planner", fns: ["calcGST"] },
   { id: "client-report", label: "Client Report", fns: ["renderReportOpts", "renderReport"] },
-  { id: "scenarios", label: "Scenario Library", fns: ["renderScenarioLibrary"] }
+  /* The Scenarios tab holds the scenario registry plus the embedded 1040
+     Planner: re-rendering the library and re-pushing the selection into the
+     planner keeps both halves of the tab current in one module. The planner's
+     own engine still does every calculation. */
+  { id: "scenarios", label: "Scenarios & 1040 Planner", fns: ["renderScenarioLibrary", "recalcScenariosPlanner"] }
 ];
 /* Tabs whose calculations run inside an embedded app with its own service */
-const RECALC_EMBEDDED = { "workbench": "Planning Workbench", "planner-1040": "1040 Planner" };
+const RECALC_EMBEDDED = { "workbench": "Planning Workbench" };
 
 const RECALC_RULES_LABEL = "OBBBA 2025 · TY2026 limits";
 const RECALC_ENGINE_LABEL = "shell engine v2026.2";
